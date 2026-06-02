@@ -1,0 +1,614 @@
+/* ── Sticky Notes Board ─────────────────────────────────────────────────────── */
+
+.wb-sticky-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.wb-sticky {
+    position: absolute;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 6px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.13), 0 1px 3px rgba(0,0,0,0.08);
+    pointer-events: auto;
+    min-height: 180px;
+    transition: box-shadow var(--dur-fast) ease;
+}
+
+.wb-sticky:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.17), 0 1px 4px rgba(0,0,0,0.10);
+}
+
+/* ── Header / drag handle ──────────────────────────────────── */
+.wb-sticky-head {
+    height: 28px;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    padding: 0 5px;
+    cursor: grab;
+    flex-shrink: 0;
+    user-select: none;
+    gap: 3px;
+}
+
+.wb-sticky-head:active { cursor: grabbing; }
+
+/* ── Colour wheel trigger button (left of header) ──────────── */
+.wb-color-btn {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.18);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: transform var(--dur-fast) var(--ease-spring),
+                border-color var(--dur-fast) ease;
+    outline: none;
+}
+
+.wb-color-btn:hover {
+    transform: scale(1.25);
+    border-color: rgba(0,0,0,0.40);
+}
+
+/* ── Colour wheel overlay ──────────────────────────────────── */
+.wb-color-wheel-overlay {
+    position: fixed;
+    z-index: 9999;
+    border-radius: 50%;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.22);
+    cursor: crosshair;
+    user-select: none;
+}
+
+.wb-color-wheel-canvas {
+    display: block;
+    border-radius: 50%;
+}
+
+/* ── Tool buttons (tag / archive / delete) ─────────────────── */
+.wb-sticky-tools {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    flex-shrink: 0;
+}
+
+.wb-sticky-tool-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: rgba(0,0,0,0.30);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+    outline: none;
+}
+
+.wb-sticky-tool-btn:hover {
+    background: rgba(0,0,0,0.10);
+    color: rgba(0,0,0,0.60);
+}
+
+/* ── Body container ────────────────────────────────────────── */
+.wb-sticky-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255,255,255,0.72);
+    border-radius: 0 0 6px 6px;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* ── Textarea (text note) ──────────────────────────────────── */
+.wb-sticky-text {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 8px 10px 10px;
+    font-family: var(--font-ui);
+    font-size: var(--fs-base);
+    color: var(--text);
+    line-height: 1.65;
+    background: transparent;
+    caret-color: var(--primary);
+    min-height: 120px;
+}
+
+.wb-sticky-text::placeholder {
+    color: var(--muted);
+    opacity: 0.55;
+}
+
+/* ── Todo list ─────────────────────────────────────────────── */
+.wb-todo-list {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 4px 6px 4px;
+    gap: 1px;
+    flex: 1;
+}
+
+.wb-todo-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    min-height: 26px;
+}
+
+.wb-todo-row:hover { background: rgba(0,0,0,0.04); }
+.wb-todo-row:hover .wb-todo-del-item { opacity: 1; }
+
+.wb-todo-cb {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+    margin: 0;
+}
+
+.wb-todo-text {
+    flex: 1;
+    font-family: var(--font-ui);
+    font-size: var(--fs-base);
+    color: var(--text);
+    line-height: 1.5;
+    outline: none;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.wb-todo-row.is-done .wb-todo-text {
+    text-decoration: line-through;
+    color: var(--muted);
+    opacity: 0.65;
+}
+
+.wb-todo-del-item {
+    opacity: 0;
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    border-radius: 3px;
+    transition: color var(--dur-fast) ease, background var(--dur-fast) ease;
+    outline: none;
+}
+
+.wb-todo-del-item:hover {
+    color: var(--danger);
+    background: rgba(239,68,68,0.12);
+}
+
+.wb-todo-add-row {
+    padding: 3px 6px;
+}
+
+.wb-todo-new-input {
+    width: 100%;
+    border: none;
+    border-top: 1px dashed rgba(0,0,0,0.12);
+    outline: none;
+    padding: 5px 2px 3px;
+    font-family: var(--font-ui);
+    font-size: var(--fs-base);
+    color: var(--text);
+    background: transparent;
+    caret-color: var(--primary);
+}
+
+.wb-todo-new-input::placeholder {
+    color: var(--muted);
+    opacity: 0.5;
+}
+
+/* ── Ticket note ───────────────────────────────────────────── */
+.wb-ticket-content {
+    min-height: 80px;
+    max-height: 160px;
+}
+
+.wb-ticket-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 6px 8px 8px;
+    border-top: 1px solid rgba(0,0,0,0.07);
+    align-items: flex-start;
+}
+
+.wb-ticket-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(37,99,235,0.35);
+    background: rgba(219,234,254,0.55);
+    color: #1d4ed8;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+    white-space: nowrap;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    outline: none;
+}
+
+.wb-ticket-link-btn:hover {
+    background: rgba(191,219,254,0.80);
+    border-color: rgba(37,99,235,0.6);
+}
+
+.wb-link-del {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    line-height: 1;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity var(--dur-fast) ease, background var(--dur-fast) ease;
+    cursor: pointer;
+}
+
+.wb-ticket-link-btn:hover .wb-link-del {
+    opacity: 0.6;
+}
+
+.wb-link-del:hover {
+    opacity: 1 !important;
+    background: rgba(239,68,68,0.15);
+    color: var(--danger);
+}
+
+.wb-ticket-add-link-btn {
+    padding: 3px 9px;
+    border-radius: 12px;
+    border: 1.5px dashed rgba(0,0,0,0.20);
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    cursor: pointer;
+    transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+    outline: none;
+}
+
+.wb-ticket-add-link-btn:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.wb-ticket-link-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    width: 100%;
+}
+
+.wb-ticket-form-input {
+    flex: 1;
+    min-width: 70px;
+    border: 1px solid rgba(0,0,0,0.18);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    outline: none;
+    background: #fff;
+    color: var(--text);
+}
+
+.wb-ticket-form-input:focus { border-color: var(--primary); }
+
+.wb-ticket-form-ok,
+.wb-ticket-form-cancel {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    outline: none;
+    transition: background var(--dur-fast) ease;
+}
+
+.wb-ticket-form-ok     { background: rgba(34,197,94,0.15); color: #16a34a; }
+.wb-ticket-form-ok:hover { background: rgba(34,197,94,0.30); }
+.wb-ticket-form-cancel { background: rgba(0,0,0,0.07); color: var(--muted); }
+.wb-ticket-form-cancel:hover { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+/* ── Image note ────────────────────────────────────────────── */
+.wb-sticky-img-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    min-height: 80px;
+}
+
+.wb-sticky-img {
+    max-width: 100%;
+    max-height: 360px;
+    border-radius: 3px;
+    object-fit: contain;
+    user-select: none;
+    pointer-events: auto;
+    cursor: zoom-in;
+}
+
+/* ── Lightbox ──────────────────────────────────────────────── */
+.wb-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 8000;
+    background: rgba(0, 0, 0, 0.82);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+}
+
+.wb-lightbox-img {
+    max-width: 92vw;
+    max-height: 88vh;
+    border-radius: 6px;
+    box-shadow: 0 12px 60px rgba(0, 0, 0, 0.5);
+    object-fit: contain;
+    user-select: none;
+    cursor: default;
+}
+
+/* ── Tag dropdown ──────────────────────────────────────────── */
+.wb-tag-dropdown {
+    position: fixed;
+    z-index: 9999;
+    background: var(--surface, #fff);
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 7px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    padding: 5px 0;
+    min-width: 160px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.wb-tag-dd-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: var(--fs-base);
+    color: var(--text);
+    transition: background var(--dur-fast) ease;
+    user-select: none;
+}
+
+.wb-tag-dd-row:hover { background: rgba(0,0,0,0.05); }
+
+.wb-tag-dd-row input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+    margin: 0;
+}
+
+.wb-tag-dd-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+.wb-tag-dd-empty {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-ui);
+}
+
+/* ── Inline tag-create row ─────────────────────────────────── */
+.wb-tag-dd-create {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 8px;
+    border-top: 1px solid rgba(0,0,0,0.07);
+}
+
+.wb-tag-dd-create-input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    outline: none;
+    background: #fff;
+    color: var(--text);
+}
+
+.wb-tag-dd-create-input:focus {
+    border-color: var(--primary);
+}
+
+.wb-tag-dd-color {
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 4px;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    flex-shrink: 0;
+}
+
+.wb-tag-dd-add-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.15);
+    background: rgba(0,0,0,0.04);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+    outline: none;
+}
+
+.wb-tag-dd-add-btn:hover { background: rgba(37,99,235,0.12); color: var(--primary); }
+.wb-tag-dd-add-btn:disabled { opacity: 0.45; cursor: default; }
+
+/* ── Ticket link colour swatches ───────────────────────────── */
+.wb-link-color-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 2px 0;
+    width: 100%;
+}
+
+.wb-link-color-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: none;
+    outline: 2px solid transparent;
+    outline-offset: 1px;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: transform var(--dur-fast) ease, outline-color var(--dur-fast) ease;
+}
+
+.wb-link-color-swatch:hover { transform: scale(1.2); }
+.wb-link-color-swatch.is-selected { transform: scale(1.15); }
+
+/* ── Resize handle ─────────────────────────────────── */
+.wb-sticky-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    cursor: se-resize;
+    z-index: 2;
+    border-radius: 0 0 6px 0;
+    background: linear-gradient(
+        135deg,
+        transparent 40%,
+        rgba(0,0,0,0.13) 40%, rgba(0,0,0,0.13) 50%,
+        transparent 50%,
+        transparent 65%,
+        rgba(0,0,0,0.13) 65%, rgba(0,0,0,0.13) 75%,
+        transparent 75%
+    );
+    opacity: 0;
+    transition: opacity var(--dur-fast) ease;
+}
+.wb-sticky:hover .wb-sticky-resize-handle { opacity: 1; }
+
+/* ── Image strip (inside text notes) ────────────────── */
+.wb-sticky-img-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 5px 8px 6px;
+    min-height: 0;
+}
+
+.wb-sticky-img-strip:empty {
+    padding: 0;
+}
+
+.wb-sticky-img-item {
+    position: relative;
+    width: 66px;
+    height: 66px;
+    flex-shrink: 0;
+    border-radius: 5px;
+    overflow: hidden;
+    cursor: zoom-in;
+}
+
+.wb-sticky-img-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+}
+
+.wb-sticky-img-del {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.48);
+    color: #fff;
+    font-size: 12px;
+    line-height: 1;
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    outline: none;
+    transition: background var(--dur-fast) ease;
+}
+.wb-sticky-img-item:hover .wb-sticky-img-del { display: flex; }
+.wb-sticky-img-del:hover { background: rgba(220,38,38,0.75); }

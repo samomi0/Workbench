@@ -1,0 +1,1021 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "Workbench",
+		"version": "0.1.0"
+	},
+	"paths": {
+		"/api/tools": {
+			"get": {
+				"tags": [
+					"tools"
+				],
+				"summary": "List Tools",
+				"operationId": "list_tools_api_tools_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {},
+									"type": "array",
+									"title": "Response List Tools Api Tools Get"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/tags": {
+			"get": {
+				"tags": [
+					"tags"
+				],
+				"summary": "Get Tags",
+				"operationId": "get_tags_api_tags_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": [
+					"tags"
+				],
+				"summary": "Post Tag",
+				"operationId": "post_tag_api_tags_post",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TagCreate"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"201": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/tags/{tag_id}": {
+			"delete": {
+				"tags": [
+					"tags"
+				],
+				"summary": "Remove Tag",
+				"operationId": "remove_tag_api_tags__tag_id__delete",
+				"parameters": [
+					{
+						"name": "tag_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Tag Id"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Successful Response"
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/notes": {
+			"get": {
+				"tags": [
+					"notes"
+				],
+				"summary": "List Notes",
+				"operationId": "list_notes_api_notes_get",
+				"parameters": [
+					{
+						"name": "archived",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "boolean",
+							"default": false,
+							"title": "Archived"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": [
+					"notes"
+				],
+				"summary": "Create Note",
+				"operationId": "create_note_api_notes_post",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/NoteCreate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/notes/{note_id}": {
+			"put": {
+				"tags": [
+					"notes"
+				],
+				"summary": "Update Note",
+				"operationId": "update_note_api_notes__note_id__put",
+				"parameters": [
+					{
+						"name": "note_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Note Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/NoteUpdate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": [
+					"notes"
+				],
+				"summary": "Delete Note",
+				"operationId": "delete_note_api_notes__note_id__delete",
+				"parameters": [
+					{
+						"name": "note_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Note Id"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Successful Response"
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/notes/{note_id}/image": {
+			"post": {
+				"tags": [
+					"notes"
+				],
+				"summary": "Upload Image",
+				"operationId": "upload_image_api_notes__note_id__image_post",
+				"parameters": [
+					{
+						"name": "note_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Note Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"$ref": "#/components/schemas/Body_upload_image_api_notes__note_id__image_post"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"tags": [
+					"notes"
+				],
+				"summary": "Get Image",
+				"operationId": "get_image_api_notes__note_id__image_get",
+				"parameters": [
+					{
+						"name": "note_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Note Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/resources": {
+			"get": {
+				"tags": [
+					"resources"
+				],
+				"summary": "List Resources",
+				"operationId": "list_resources_api_resources_get",
+				"parameters": [
+					{
+						"name": "tag",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "null"
+								}
+							],
+							"title": "Tag"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": [
+					"resources"
+				],
+				"summary": "Create Resource",
+				"operationId": "create_resource_api_resources_post",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ResourceCreate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/resources/{res_id}": {
+			"put": {
+				"tags": [
+					"resources"
+				],
+				"summary": "Update Resource",
+				"operationId": "update_resource_api_resources__res_id__put",
+				"parameters": [
+					{
+						"name": "res_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Res Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ResourceUpdate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": [
+					"resources"
+				],
+				"summary": "Delete Resource",
+				"operationId": "delete_resource_api_resources__res_id__delete",
+				"parameters": [
+					{
+						"name": "res_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Res Id"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Successful Response"
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/resources/{res_id}/tags": {
+			"post": {
+				"tags": [
+					"resources"
+				],
+				"summary": "Assign Tags",
+				"operationId": "assign_tags_api_resources__res_id__tags_post",
+				"parameters": [
+					{
+						"name": "res_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"title": "Res Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TagsAssign"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/archive": {
+			"post": {
+				"tags": [
+					"archive"
+				],
+				"summary": "Create Archive",
+				"operationId": "create_archive_api_archive_post",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ArchiveRequest"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"ArchiveRequest": {
+				"properties": {
+					"tag_ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"title": "Tag Ids"
+					},
+					"filename": {
+						"type": "string",
+						"title": "Filename",
+						"default": "archive.zip"
+					}
+				},
+				"type": "object",
+				"required": [
+					"tag_ids"
+				],
+				"title": "ArchiveRequest"
+			},
+			"Body_upload_image_api_notes__note_id__image_post": {
+				"properties": {
+					"file": {
+						"type": "string",
+						"format": "binary",
+						"title": "File"
+					}
+				},
+				"type": "object",
+				"required": [
+					"file"
+				],
+				"title": "Body_upload_image_api_notes__note_id__image_post"
+			},
+			"HTTPValidationError": {
+				"properties": {
+					"detail": {
+						"items": {
+							"$ref": "#/components/schemas/ValidationError"
+						},
+						"type": "array",
+						"title": "Detail"
+					}
+				},
+				"type": "object",
+				"title": "HTTPValidationError"
+			},
+			"NoteCreate": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"title": "Type",
+						"default": "note"
+					},
+					"x": {
+						"type": "integer",
+						"title": "X",
+						"default": 100
+					},
+					"y": {
+						"type": "integer",
+						"title": "Y",
+						"default": 100
+					},
+					"color": {
+						"type": "string",
+						"title": "Color",
+						"default": "#fef08a"
+					},
+					"tag_ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"title": "Tag Ids",
+						"default": []
+					},
+					"text": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Text"
+					},
+					"items": {
+						"anyOf": [
+							{
+								"items": {},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Items"
+					},
+					"content": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Content"
+					},
+					"links": {
+						"anyOf": [
+							{
+								"items": {},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Links"
+					},
+					"image_ext": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Image Ext"
+					}
+				},
+				"type": "object",
+				"title": "NoteCreate"
+			},
+			"NoteUpdate": {
+				"properties": {
+					"x": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "X"
+					},
+					"y": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Y"
+					},
+					"color": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Color"
+					},
+					"tag_ids": {
+						"anyOf": [
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Tag Ids"
+					},
+					"archived": {
+						"anyOf": [
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Archived"
+					},
+					"text": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Text"
+					},
+					"items": {
+						"anyOf": [
+							{
+								"items": {},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Items"
+					},
+					"content": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Content"
+					},
+					"links": {
+						"anyOf": [
+							{
+								"items": {},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Links"
+					},
+					"image_ext": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Image Ext"
+					}
+				},
+				"type": "object",
+				"title": "NoteUpdate"
+			},
+			"ResourceCreate": {
+				"properties": {
+					"title": {
+						"type": "string",
+						"title": "Title"
+					},
+					"content": {
+						"type": "string",
+						"title": "Content",
+						"default": ""
+					},
+					"type": {
+						"type": "string",
+						"title": "Type",
+						"default": "text"
+					}
+				},
+				"type": "object",
+				"required": [
+					"title"
+				],
+				"title": "ResourceCreate"
+			},
+			"ResourceUpdate": {
+				"properties": {
+					"title": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Title"
+					},
+					"content": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Content"
+					},
+					"type": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Type"
+					}
+				},
+				"type": "object",
+				"title": "ResourceUpdate"
+			},
+			"TagCreate": {
+				"properties": {
+					"name": {
+						"type": "string",
+						"title": "Name"
+					},
+					"color": {
+						"type": "string",
+						"title": "Color",
+						"default": "#2563eb"
+					}
+				},
+				"type": "object",
+				"required": [
+					"name"
+				],
+				"title": "TagCreate"
+			},
+			"TagsAssign": {
+				"properties": {
+					"tag_ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"title": "Tag Ids"
+					}
+				},
+				"type": "object",
+				"required": [
+					"tag_ids"
+				],
+				"title": "TagsAssign"
+			},
+			"ValidationError": {
+				"properties": {
+					"loc": {
+						"items": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "integer"
+								}
+							]
+						},
+						"type": "array",
+						"title": "Location"
+					},
+					"msg": {
+						"type": "string",
+						"title": "Message"
+					},
+					"type": {
+						"type": "string",
+						"title": "Error Type"
+					}
+				},
+				"type": "object",
+				"required": [
+					"loc",
+					"msg",
+					"type"
+				],
+				"title": "ValidationError"
+			}
+		}
+	}
+}

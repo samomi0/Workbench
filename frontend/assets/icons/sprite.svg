@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+
+  <!-- icon-note: document with folded corner and text lines -->
+  <symbol id="icon-note" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <path d="M14 3v5h5"/>
+    <line x1="8" y1="13" x2="16" y2="13"/>
+    <line x1="8" y1="17" x2="12" y2="17"/>
+  </symbol>
+
+  <!-- icon-tag: price-tag / label -->
+  <symbol id="icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+    <line x1="7" y1="7" x2="7.01" y2="7"/>
+  </symbol>
+
+  <!-- icon-archive: box with lid and latch -->
+  <symbol id="icon-archive" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="21 8 21 21 3 21 3 8"/>
+    <rect x="1" y="3" width="22" height="5"/>
+    <line x1="10" y1="12" x2="14" y2="12"/>
+  </symbol>
+
+  <!-- icon-close: X mark -->
+  <symbol id="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </symbol>
+
+  <!-- icon-minimize: single dash -->
+  <symbol id="icon-minimize" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </symbol>
+
+  <!-- icon-expand: corner arrows pointing out -->
+  <symbol id="icon-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="15 3 21 3 21 9"/>
+    <polyline points="9 21 3 21 3 15"/>
+    <line x1="21" y1="3" x2="14" y2="10"/>
+    <line x1="3"  y1="21" x2="10" y2="14"/>
+  </symbol>
+
+  <!-- icon-plus: + sign -->
+  <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round">
+    <line x1="12" y1="5" x2="12" y2="19"/>
+    <line x1="5"  y1="12" x2="19" y2="12"/>
+  </symbol>
+
+  <!-- icon-trash: trash can -->
+  <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3 6 5 6 21 6"/>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+    <line x1="10" y1="11" x2="10" y2="17"/>
+    <line x1="14" y1="11" x2="14" y2="17"/>
+  </symbol>
+
+  <!-- icon-check: checkmark -->
+  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </symbol>
+
+  <!-- icon-grip: drag handle (2x3 dot matrix) -->
+  <symbol id="icon-grip" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.5" stroke-linecap="round">
+    <line x1="9"  y1="5"  x2="9"  y2="5"/>
+    <line x1="15" y1="5"  x2="15" y2="5"/>
+    <line x1="9"  y1="12" x2="9"  y2="12"/>
+    <line x1="15" y1="12" x2="15" y2="12"/>
+    <line x1="9"  y1="19" x2="9"  y2="19"/>
+    <line x1="15" y1="19" x2="15" y2="19"/>
+  </symbol>
+
+  <!-- icon-todo: checklist with tick marks -->
+  <symbol id="icon-todo" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="11" y1="6"  x2="20" y2="6"/>
+    <line x1="11" y1="12" x2="20" y2="12"/>
+    <line x1="11" y1="18" x2="20" y2="18"/>
+    <polyline points="3 6 4.5 7.5 7 5"/>
+    <polyline points="3 12 4.5 13.5 7 11"/>
+    <polyline points="3 18 4.5 19.5 7 17"/>
+  </symbol>
+
+  <!-- icon-ticket: card with link indicator -->
+  <symbol id="icon-ticket" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2"/>
+    <line x1="6" y1="9"  x2="15" y2="9"/>
+    <line x1="6" y1="13" x2="11" y2="13"/>
+    <path d="M16 14.5 a1.5 1.5 0 0 1 0-3h1a1.5 1.5 0 0 1 0 3"/>
+    <path d="M17 14.5 a1.5 1.5 0 0 0 0-3h-1"/>
+    <line x1="15.5" y1="13" x2="17.5" y2="13"/>
+  </symbol>
+
+  <!-- icon-hash: # sign (for example/dev modules) -->
+  <symbol id="icon-hash" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round">
+    <line x1="4"  y1="9"  x2="20" y2="9"/>
+    <line x1="4"  y1="15" x2="20" y2="15"/>
+    <line x1="10" y1="3"  x2="8"  y2="21"/>
+    <line x1="16" y1="3"  x2="14" y2="21"/>
+  </symbol>
+
+  <!-- icon-search: magnifying glass -->
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </symbol>
+
+  <!-- icon-link: chain link -->
+  <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+  </symbol>
+
+  <!-- icon-download: arrow pointing down into tray -->
+  <symbol id="icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </symbol>
+
+</svg>

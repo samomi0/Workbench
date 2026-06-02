@@ -1,0 +1,7 @@
+{
+  "id": "archive-view",
+  "name": "归档",
+  "icon": "icon-archive",
+  "description": "Browse and manage archived sticky notes",
+  "version": "1.0"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "_template",
+  "name": "New Tool",
+  "icon": "icon-hash",
+  "description": "Template: copy this folder, remove the leading underscore from the folder name, then edit tool.json.",
+  "version": "0.1"
+}

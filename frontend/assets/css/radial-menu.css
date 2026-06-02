@@ -1,0 +1,117 @@
+/* ── Overlay (click-outside closes the menu) ─────────────────────────────── */
+.wb-radial-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-radial) - 1);
+}
+
+.wb-radial-overlay.is-active {
+    display: block;
+}
+
+/* ── Container (positioned at right-click point, holds the SVG) ──────────── */
+.wb-radial-container {
+    position: fixed;
+    z-index: var(--z-radial);
+    pointer-events: none;
+
+    /* Centered on the click point */
+    translate: -50% -50%;
+
+    /* Closed state */
+    scale:   0.2;
+    opacity: 0;
+    transition:
+        scale   var(--dur-base) var(--ease-spring),
+        opacity var(--dur-fast) var(--ease-out);
+}
+
+.wb-radial-container.is-open {
+    scale:   1;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.wb-radial-container.is-closing {
+    scale:   0.2;
+    opacity: 0;
+    transition:
+        scale   var(--dur-fast) var(--ease-out),
+        opacity var(--dur-fast) var(--ease-out);
+}
+
+/* ── SVG canvas ──────────────────────────────────────────────────────────── */
+.wb-radial-svg {
+    display: block;
+    overflow: visible;
+    filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.13));
+}
+
+/* ── Center decoration ───────────────────────────────────────────────────── */
+.wb-radial-center {
+    fill:         var(--bg-panel);
+    stroke:       var(--border);
+    stroke-width: 1;
+}
+
+.wb-radial-center-mark {
+    color:   var(--muted);
+    opacity: 0.35;
+}
+
+/* ── Sector group ────────────────────────────────────────────────────────── */
+.wb-radial-sector {
+    cursor: pointer;
+}
+
+/* Sector background path */
+.wb-radial-sector-path {
+    fill:         var(--radial-sector-bg);
+    stroke:       var(--radial-border);
+    stroke-width: 1;
+    transition:
+        fill   var(--dur-fast) ease,
+        stroke var(--dur-fast) ease;
+}
+
+.wb-radial-sector:hover .wb-radial-sector-path,
+.wb-radial-sector.is-hover .wb-radial-sector-path {
+    fill:   var(--radial-sector-hover);
+    stroke: var(--primary);
+}
+
+/* Icon */
+.wb-radial-sector-icon {
+    pointer-events: none;
+    color:   var(--muted);
+    opacity: 0.65;
+    transition:
+        opacity var(--dur-fast) ease,
+        color   var(--dur-fast) ease;
+}
+
+.wb-radial-sector:hover .wb-radial-sector-icon,
+.wb-radial-sector.is-hover .wb-radial-sector-icon {
+    opacity: 1;
+    color:   var(--primary);
+}
+
+/* Label text */
+.wb-radial-sector-label {
+    font-family:    var(--font-ui);
+    font-size:      8.5px;
+    font-weight:    600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    fill:           var(--text);
+    pointer-events: none;
+    user-select:    none;
+    opacity: 0;
+    transition: opacity var(--dur-fast) ease;
+}
+
+.wb-radial-sector:hover .wb-radial-sector-label,
+.wb-radial-sector.is-hover .wb-radial-sector-label {
+    opacity: 0.72;
+}

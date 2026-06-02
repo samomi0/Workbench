@@ -1,0 +1,47 @@
+:root {
+    /* ── Canvas ──────────────────────────────────── */
+    --bg-canvas:     #fefce8;
+    --grid-color:    rgba(160, 140, 0, 0.09);
+    --grid-size:     24px;
+
+    /* ── Panels ──────────────────────────────────── */
+    --bg-panel:      #ffffff;
+    --bg-panel-head: #fafafa;
+    --border:        #e4e7ed;
+    --shadow-panel:        0 2px 16px rgba(0, 0, 0, 0.08);
+    --shadow-panel-active: 0 4px 28px rgba(0, 0, 0, 0.13);
+    --radius-panel:  8px;
+
+    /* ── Brand colors ────────────────────────────── */
+    --primary:       #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-dim:   rgba(37, 99, 235, 0.10);
+    --text:          #1e2130;
+    --muted:         #8492a6;
+    --danger:        #ef4444;
+    --success:       #22c55e;
+
+    /* ── Radial menu ─────────────────────────────── */
+    --radial-sector-bg:    rgba(255, 255, 255, 0.93);
+    --radial-sector-hover: rgba(37, 99, 235, 0.10);
+    --radial-border:       rgba(228, 231, 237, 0.90);
+
+    /* ── Z-index stack ───────────────────────────── */
+    --z-panel:   10;       /* panels: 10-99 (dynamic) */
+    --z-radial:  500;
+    --z-context: 9999;
+
+    /* ── Typography ──────────────────────────────── */
+    --font-ui:   system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    --fs-base:   13px;
+    --fs-sm:     11px;
+    --fs-xs:     10px;
+
+    /* ── Motion ──────────────────────────────────── */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-out:    cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --dur-fast:    120ms;
+    --dur-base:    220ms;
+    --dur-slow:    360ms;
+}

@@ -1,0 +1,105 @@
+/* ── Fan Menu – palette-style SVG arc at bottom-left ───────────────────────── */
+
+/* FAB trigger button */
+.wb-fan-fab {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: calc(var(--z-radial) + 1);  /* above the SVG fan */
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.38);
+    transition:
+        background  var(--dur-fast) ease,
+        transform   var(--dur-base) var(--ease-spring),
+        box-shadow  var(--dur-fast) ease;
+    outline: none;
+}
+
+.wb-fan-fab:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.50);
+}
+
+.wb-fan-fab:active { transform: scale(0.92); }
+
+.wb-fan-fab.is-open {
+    background: var(--primary-hover);
+    transform: rotate(45deg) scale(1.05);
+}
+
+.wb-fan-fab-icon { pointer-events: none; }
+
+/* Transparent overlay to catch outside clicks */
+.wb-fan-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-radial) - 1);
+}
+
+.wb-fan-overlay.is-active { display: block; }
+
+/* SVG fan – anchored so its origin (0,0) aligns with FAB center.
+   FAB: bottom:16px left:16px width:40px → center at (36, bottom+36).
+   SVG viewBox covers [0, -92, 92, 92] so sectors radiate up+right. */
+.wb-fan-svg {
+    position: fixed;
+    bottom: 36px;
+    left: 36px;
+    z-index: var(--z-radial);
+    overflow: visible;
+    pointer-events: none;
+    width:  92px;
+    height: 92px;
+}
+
+/* Sectors container – scales in from origin (FAB center) on open */
+.wb-fan-sectors {
+    transform-origin: 0 0;
+    transform: scale(0);
+    transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.wb-fan-svg.is-open .wb-fan-sectors {
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+/* Individual sector */
+.wb-fan-sector { cursor: pointer; }
+
+.wb-fan-sector-path {
+    fill:         var(--bg-panel);
+    stroke:       var(--border);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    transition:
+        fill   var(--dur-fast) ease,
+        stroke var(--dur-fast) ease;
+}
+
+.wb-fan-sector:hover .wb-fan-sector-path,
+.wb-fan-sector.is-active .wb-fan-sector-path {
+    fill:   var(--primary-dim);
+    stroke: var(--primary);
+}
+
+.wb-fan-sector-icon {
+    fill: var(--muted);
+    pointer-events: none;
+    transition: fill var(--dur-fast) ease;
+}
+
+.wb-fan-sector:hover .wb-fan-sector-icon,
+.wb-fan-sector.is-active .wb-fan-sector-icon {
+    fill: var(--primary);
+}

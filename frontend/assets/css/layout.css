@@ -1,0 +1,45 @@
+/* Full-screen canvas - the only persistent layout element */
+.wb-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;          /* explicit: keeps canvas below FAB (z=500) & event-capture (z=1) */
+    overflow: hidden;
+}
+
+/* Startup hint: visible until first panel opens */
+.wb-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    user-select: none;
+    opacity: 1;
+    transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.wb-hint.is-hidden {
+    opacity: 0;
+}
+
+.wb-hint-inner {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.wb-hint-icon {
+    color: var(--muted);
+    opacity: 0.45;
+}
+
+.wb-hint-text {
+    font-size: var(--fs-xs);
+    color: var(--muted);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    opacity: 0.55;
+}

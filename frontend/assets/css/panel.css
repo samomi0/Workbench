@@ -1,0 +1,105 @@
+/* ── Panel wrapper ───────────────────────────────────────────────────────────── */
+.wb-panel {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-panel);
+    min-width: 200px;
+    min-height: 60px;
+    overflow: hidden;
+    /* Appear animation */
+    animation: wb-panel-in var(--dur-base) var(--ease-spring) both;
+}
+
+@keyframes wb-panel-in {
+    from { scale: 0.92; opacity: 0; }
+    to   { scale: 1;    opacity: 1; }
+}
+
+.wb-panel.is-active {
+    box-shadow: var(--shadow-panel-active);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+.wb-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 6px 0 10px;
+    height: 36px;
+    background: var(--bg-panel-head);
+    border-bottom: 1px solid var(--border);
+    user-select: none;
+    cursor: grab;
+    flex-shrink: 0;
+    transition: background var(--dur-fast) ease;
+}
+
+.wb-panel-head:active { cursor: grabbing; }
+
+.wb-panel.is-minimized .wb-panel-head {
+    border-bottom: none;
+    border-radius: var(--radius-panel);
+}
+
+.wb-panel-icon {
+    flex-shrink: 0;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    line-height: 0;
+}
+
+.wb-panel-title {
+    flex: 1;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wb-panel-controls {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.wb-panel-btn {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: var(--muted);
+    line-height: 0;
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.wb-panel-btn:hover              { background: var(--primary-dim);            color: var(--primary); }
+.wb-panel-btn.is-danger:hover   { background: rgba(239, 68, 68, 0.10);        color: var(--danger);  }
+
+/* ── Body ─────────────────────────────────────────────────────────────────────── */
+.wb-panel-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+}
+
+.wb-panel.is-minimized .wb-panel-body { display: none; }
+
+.wb-panel-body > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}

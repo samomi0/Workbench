@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>归档</title>
+<link rel="stylesheet" href="/assets/css/variables.css">
+<link rel="stylesheet" href="/assets/css/reset.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    background: var(--bg-canvas, #fefce8);
+    color: var(--text, #1e2130);
+    font-family: var(--font-ui, system-ui, sans-serif);
+    font-size: var(--fs-base, 13px);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Header ──────────────────────────────────────────────────────── */
+.av-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border, #e4e7ed);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.av-header h1 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text, #1e2130);
+    flex: 1;
+}
+
+.av-count {
+    font-size: 12px;
+    color: var(--muted, #8492a6);
+    background: rgba(0,0,0,0.06);
+    border-radius: 10px;
+    padding: 2px 9px;
+}
+
+/* ── Grid ────────────────────────────────────────────────────────── */
+.av-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+    padding: 20px;
+    align-content: start;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.av-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--muted, #8492a6);
+    padding: 60px 20px;
+}
+
+.av-empty-icon {
+    font-size: 40px;
+    opacity: 0.3;
+}
+
+.av-empty-text {
+    font-size: 14px;
+}
+
+/* ── Card ────────────────────────────────────────────────────────── */
+.av-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.15s ease;
+    animation: av-pop 0.18s ease;
+}
+
+.av-card:hover {
+    box-shadow: 0 4px 18px rgba(0,0,0,0.13);
+}
+
+@keyframes av-pop {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* Color accent bar on left */
+.av-card-inner {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+}
+
+.av-color-bar {
+    width: 5px;
+    flex-shrink: 0;
+    border-radius: 0;
+}
+
+.av-card-content {
+    flex: 1;
+    padding: 10px 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+/* ── Type badge ──────────────────────────────────────────────────── */
+.av-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 7px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    align-self: flex-start;
+}
+
+.av-badge-note   { background: rgba(254,240,138,0.5); color: #92400e; }
+.av-badge-todo   { background: rgba(187,247,208,0.5); color: #166534; }
+.av-badge-ticket { background: rgba(186,230,253,0.5); color: #0369a1; }
+.av-badge-image  { background: rgba(233,213,255,0.5); color: #6b21a8; }
+
+/* ── Preview content ─────────────────────────────────────────────── */
+.av-preview {
+    font-size: 12px;
+    color: var(--text, #1e2130);
+    line-height: 1.5;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    word-break: break-all;
+    flex: 1;
+}
+
+.av-preview-empty {
+    color: var(--muted, #8492a6);
+    font-style: italic;
+}
+
+/* Todo items */
+.av-todo-item {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.av-todo-item.done {
+    text-decoration: line-through;
+    color: var(--muted, #8492a6);
+}
+
+.av-todo-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+    display: inline-block;
+    margin-top: 3px;
+}
+
+/* Ticket links */
+.av-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.av-link-pill {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 10px;
+    border: 1px solid rgba(37,99,235,0.30);
+    background: rgba(219,234,254,0.45);
+    color: #1d4ed8;
+    font-size: 11px;
+    text-decoration: none;
+    white-space: nowrap;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Image thumbnail */
+.av-thumb {
+    width: 100%;
+    max-height: 140px;
+    object-fit: cover;
+    display: block;
+    border-radius: 3px;
+    margin-top: 2px;
+}
+
+/* ── Card footer (actions) ───────────────────────────────────────── */
+.av-card-footer {
+    display: flex;
+    gap: 6px;
+    padding: 7px 12px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    background: rgba(0,0,0,0.015);
+}
+
+.av-btn {
+    flex: 1;
+    padding: 4px 0;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-family: var(--font-ui, system-ui);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+    outline: none;
+    text-align: center;
+}
+
+.av-btn-restore {
+    background: rgba(34,197,94,0.10);
+    color: #16a34a;
+    border-color: rgba(34,197,94,0.25);
+}
+.av-btn-restore:hover {
+    background: rgba(34,197,94,0.22);
+    border-color: rgba(34,197,94,0.5);
+}
+
+.av-btn-delete {
+    background: rgba(239,68,68,0.08);
+    color: #dc2626;
+    border-color: rgba(239,68,68,0.20);
+}
+.av-btn-delete:hover {
+    background: rgba(239,68,68,0.18);
+    border-color: rgba(239,68,68,0.45);
+}
+
+/* ── Loading spinner ─────────────────────────────────────────────── */
+.av-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--muted, #8492a6);
+    padding: 60px;
+}
+
+.av-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid rgba(0,0,0,0.10);
+    border-top-color: var(--primary, #2563eb);
+    border-radius: 50%;
+    animation: av-spin 0.7s linear infinite;
+}
+
+@keyframes av-spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<header class="av-header">
+    <h1>归档便签</h1>
+    <span class="av-count" id="av-count" style="display:none"></span>
+</header>
+
+<div id="av-body" class="av-loading">
+    <div class="av-spinner"></div>
+    <span>加载中…</span>
+</div>
+
+<script>
+const BADGE_LABELS = { note: '便签', todo: 'Todo', ticket: '工单', image: '图片' };
+const BADGE_CLASS  = { note: 'av-badge-note', todo: 'av-badge-todo', ticket: 'av-badge-ticket', image: 'av-badge-image' };
+
+const countEl = document.getElementById('av-count');
+const bodyEl  = document.getElementById('av-body');
+
+let notes = [];
+
+async function load() {
+    try {
+        const res = await fetch('/api/notes?archived=true');
+        if (!res.ok) throw new Error(res.statusText);
+        notes = await res.json();
+    } catch (err) {
+        bodyEl.innerHTML = `<div class="av-empty"><div class="av-empty-icon">⚠️</div><div class="av-empty-text">加载失败：${err.message}</div></div>`;
+        return;
+    }
+    render();
+}
+
+function render() {
+    if (notes.length === 0) {
+        countEl.style.display = 'none';
+        bodyEl.className = '';
+        bodyEl.innerHTML = `
+            <div class="av-empty">
+                <div class="av-empty-icon">🗄️</div>
+                <div class="av-empty-text">暂无归档内容</div>
+            </div>`;
+        return;
+    }
+
+    countEl.textContent = notes.length + ' 条';
+    countEl.style.display = '';
+    bodyEl.className = 'av-grid';
+    bodyEl.innerHTML = '';
+
+    notes.forEach(note => bodyEl.appendChild(makeCard(note)));
+}
+
+function makeCard(note) {
+    const card = document.createElement('div');
+    card.className = 'av-card';
+    card.dataset.id = note.id;
+
+    // Inner wrapper for color bar + content
+    const inner = document.createElement('div');
+    inner.className = 'av-card-inner';
+
+    // Color bar
+    const bar = document.createElement('div');
+    bar.className  = 'av-color-bar';
+    bar.style.background = note.color || '#fef08a';
+    inner.appendChild(bar);
+
+    // Content area
+    const content = document.createElement('div');
+    content.className = 'av-card-content';
+
+    // Badge
+    const badge = document.createElement('span');
+    badge.className = 'av-badge ' + (BADGE_CLASS[note.type] || 'av-badge-note');
+    badge.textContent = BADGE_LABELS[note.type] || '便签';
+    content.appendChild(badge);
+
+    // Preview by type
+    content.appendChild(makePreview(note));
+    inner.appendChild(content);
+    card.appendChild(inner);
+
+    // Footer actions
+    const footer = document.createElement('div');
+    footer.className = 'av-card-footer';
+
+    const restoreBtn = document.createElement('button');
+    restoreBtn.className   = 'av-btn av-btn-restore';
+    restoreBtn.textContent = '恢复';
+    restoreBtn.addEventListener('click', () => restoreNote(note.id, card));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className   = 'av-btn av-btn-delete';
+    deleteBtn.textContent = '永久删除';
+    deleteBtn.addEventListener('click', () => deleteNote(note.id, card));
+
+    footer.append(restoreBtn, deleteBtn);
+    card.appendChild(footer);
+
+    return card;
+}
+
+function makePreview(note) {
+    const el = document.createElement('div');
+    el.className = 'av-preview';
+
+    switch (note.type) {
+        case 'todo': {
+            const items = Array.isArray(note.items) ? note.items : [];
+            if (items.length === 0) {
+                el.innerHTML = '<span class="av-preview-empty">无待办项目</span>';
+            } else {
+                items.slice(0, 5).forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'av-todo-item' + (item.done ? ' done' : '');
+                    const dot = document.createElement('span');
+                    dot.className = 'av-todo-dot';
+                    const text = document.createTextNode(item.text || '');
+                    row.append(dot, text);
+                    el.appendChild(row);
+                });
+                if (items.length > 5) {
+                    const more = document.createElement('div');
+                    more.style.color = 'var(--muted)';
+                    more.style.fontSize = '11px';
+                    more.textContent = `…还有 ${items.length - 5} 项`;
+                    el.appendChild(more);
+                }
+            }
+            break;
+        }
+        case 'ticket': {
+            if (note.content) {
+                const p = document.createElement('div');
+                p.textContent = note.content;
+                el.appendChild(p);
+            }
+            const links = Array.isArray(note.links) ? note.links : [];
+            if (links.length > 0) {
+                const linkArea = document.createElement('div');
+                linkArea.className = 'av-links';
+                links.slice(0, 4).forEach(lk => {
+                    const a = document.createElement('a');
+                    a.className = 'av-link-pill';
+                    a.href      = lk.url;
+                    a.target    = '_blank';
+                    a.rel       = 'noopener noreferrer';
+                    a.textContent = lk.label || lk.url;
+                    linkArea.appendChild(a);
+                });
+                el.appendChild(linkArea);
+            }
+            if (!note.content && links.length === 0) {
+                el.innerHTML = '<span class="av-preview-empty">空工单</span>';
+            }
+            break;
+        }
+        case 'image': {
+            const img = document.createElement('img');
+            img.className = 'av-thumb';
+            img.src       = `/api/notes/${note.id}/image`;
+            img.alt       = '';
+            img.loading   = 'lazy';
+            el.appendChild(img);
+            break;
+        }
+        default: {
+            if (note.text) {
+                el.textContent = note.text;
+            } else {
+                el.innerHTML = '<span class="av-preview-empty">空便签</span>';
+            }
+            break;
+        }
+    }
+    return el;
+}
+
+async function restoreNote(id, cardEl) {
+    try {
+        const res = await fetch(`/api/notes/${id}`, {
+            method:  'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ archived: false }),
+        });
+        if (!res.ok) throw new Error(res.statusText);
+        cardEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        cardEl.style.opacity    = '0';
+        cardEl.style.transform  = 'scale(0.92)';
+        setTimeout(() => {
+            cardEl.remove();
+            notes = notes.filter(n => n.id !== id);
+            if (notes.length === 0) render();
+            else updateCount();
+        }, 220);
+    } catch (err) {
+        alert('恢复失败：' + err.message);
+    }
+}
+
+async function deleteNote(id, cardEl) {
+    if (!confirm('确定永久删除这条归档便签？此操作不可撤销。')) return;
+    try {
+        const res = await fetch(`/api/notes/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error(res.statusText);
+        cardEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        cardEl.style.opacity    = '0';
+        cardEl.style.transform  = 'scale(0.92)';
+        setTimeout(() => {
+            cardEl.remove();
+            notes = notes.filter(n => n.id !== id);
+            if (notes.length === 0) render();
+            else updateCount();
+        }, 220);
+    } catch (err) {
+        alert('删除失败：' + err.message);
+    }
+}
+
+function updateCount() {
+    countEl.textContent = notes.length + ' 条';
+}
+
+load();
+</script>
+</body>
+</html>

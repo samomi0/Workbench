@@ -1,0 +1,196 @@
+/* ── Shared system panel shell ────────────────────────────────────────────────
+   .wb-syspanel is used by Tags and Archive panels as their root element.
+   It is injected into .wb-panel-body via panel.js (absolute-fills the body).
+   ────────────────────────────────────────────────────────────────────────── */
+
+.wb-syspanel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    overflow: hidden;
+    /* position:absolute;inset:0 applied by panel.js */
+}
+
+/* ── Toolbar row ─────────────────────────────────────────────────────────── */
+.wb-syspanel-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.wb-syspanel-input {
+    flex: 1;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: var(--fs-sm);
+    background: var(--bg-canvas);
+    color: var(--text);
+    outline: none;
+    transition: border-color var(--dur-fast) ease;
+}
+
+.wb-syspanel-input:focus { border-color: var(--primary); }
+
+.wb-syspanel-color {
+    width: 28px;
+    height: 28px;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.wb-syspanel-btn {
+    height: 28px;
+    min-width: 28px;
+    padding: 0 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 5px;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+    transition: background var(--dur-fast) ease, opacity var(--dur-fast) ease;
+    line-height: 0;
+}
+
+.wb-syspanel-btn:hover    { background: var(--primary-hover); }
+.wb-syspanel-btn:disabled { opacity: 0.45; cursor: default; }
+
+/* ── Scrollable list area ─────────────────────────────────────────────────── */
+.wb-syspanel-list-wrap {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-canvas);
+    min-height: 0;
+}
+
+.wb-syspanel-list {
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.wb-syspanel-empty {
+    padding: 24px 12px;
+    text-align: center;
+    font-size: var(--fs-sm);
+    color: var(--muted);
+}
+
+/* ── Tag list items ───────────────────────────────────────────────────────── */
+.wb-tag-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 6px;
+    border-radius: 4px;
+    transition: background var(--dur-fast) ease;
+}
+
+.wb-tag-item:hover { background: var(--bg-panel); }
+
+.wb-tag-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.wb-tag-name {
+    flex: 1;
+    font-size: var(--fs-sm);
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wb-tag-del {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    color: var(--muted);
+    line-height: 0;
+    opacity: 0;
+    transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.wb-tag-item:hover .wb-tag-del { opacity: 1; }
+.wb-tag-del:hover               { color: var(--danger); }
+
+/* ── Archive panel specifics ─────────────────────────────────────────────── */
+.wb-archive-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.wb-archive-section.is-grow {
+    flex: 1;
+    min-height: 0;
+}
+
+.wb-archive-label {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 2px;
+}
+
+.wb-archive-tags {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-canvas);
+    padding: 4px;
+    min-height: 0;
+}
+
+.wb-archive-tag-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background var(--dur-fast) ease;
+}
+
+.wb-archive-tag-row:hover { background: var(--bg-panel); }
+
+.wb-archive-tag-row input[type="checkbox"] {
+    accent-color: var(--primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.wb-archive-bottom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.wb-archive-bottom .wb-syspanel-input { flex: 1; }

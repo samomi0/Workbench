@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New Tool</title>
+    <link rel="stylesheet" href="/assets/css/variables.css">
+    <link rel="stylesheet" href="/assets/css/reset.css">
+    <link rel="stylesheet" href="/assets/css/base.css">
+    <style>
+        html, body { height: 100%; }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            padding: 16px 18px;
+            gap: 12px;
+            color: var(--text);
+            background: var(--bg-panel);
+        }
+
+        h1 {
+            font-size: var(--fs-sm);
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        p { font-size: var(--fs-sm); line-height: 1.7; color: var(--text); }
+
+        code {
+            font-family: 'Cascadia Code', 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            background: var(--bg-canvas);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 1px 5px;
+        }
+
+        hr { border: none; border-top: 1px solid var(--border); }
+
+        .checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            list-style: none;
+        }
+
+        .checklist li {
+            font-size: var(--fs-sm);
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .checklist li::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tool template</h1>
+
+    <p>
+        This page runs inside a sandboxed <code>iframe</code> within the Workbench panel.
+        It has access to the backend API via standard <code>fetch</code> calls.
+    </p>
+
+    <hr>
+
+    <p><strong>Quick-start steps:</strong></p>
+
+    <ul class="checklist">
+        <li>Duplicate the <code>_template</code> folder and remove the leading underscore from the folder name.</li>
+        <li>Edit <code>tool.json</code> — set a unique <code>id</code>, display <code>name</code>, and <code>icon</code> symbol id.</li>
+        <li>Replace this <code>index.html</code> with your tool UI.</li>
+        <li>Optionally add a Python module under <code>backend/api/</code> and register it in <code>app.py</code>.</li>
+        <li>For mock services, add a file to <code>backend/mock/services/</code> — it is auto-discovered on startup.</li>
+    </ul>
+
+    <hr>
+
+    <p><strong>API access example:</strong></p>
+    <p>
+        <code>fetch('/api/tags')</code> returns the tag list.
+        All workbench REST endpoints are available at <code>/api/*</code>.
+    </p>
+
+    <script>
+    // Example: log available tags to the console
+    fetch('/api/tags').then(function(r) {
+        return r.json();
+    }).then(function(tags) {
+        console.log('[tool-template] tags:', tags);
+    });
+    </script>
+
+</body>
+</html>
