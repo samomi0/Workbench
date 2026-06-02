@@ -12,6 +12,18 @@ const ICON_SZ  = 16;
 const SVG_SIZE = OUTER_R + 16;   // 92 – must match .wb-fan-svg width/height in CSS
 const GAP      = 0.022;           // angular gap between adjacent sectors (rad)
 
+// Known valid icon IDs – used to fall back to icon-app for unknown / missing icons
+const VALID_ICON_IDS = new Set([
+    'icon-note', 'icon-tag', 'icon-archive', 'icon-close', 'icon-minimize',
+    'icon-expand', 'icon-plus', 'icon-trash', 'icon-check', 'icon-grip',
+    'icon-todo', 'icon-ticket', 'icon-hash', 'icon-search', 'icon-link',
+    'icon-download', 'icon-app',
+]);
+
+function safeIcon(id) {
+    return VALID_ICON_IDS.has(id) ? id : 'icon-app';
+}
+
 /**
  * Point on a circle, measured clockwise from "straight up":
  *   a=0   → (0,  -r)  = up
@@ -155,11 +167,11 @@ export class FanMenu {
             title.textContent = item.label || item.name || '';
             g.appendChild(title);
 
-            // Icon
+            // Icon (with fallback to icon-app)
             const mp   = sectorMid(i, n);
             const icon = svgEl('use', {
                 class:  'wb-fan-sector-icon',
-                href:   `/assets/icons/sprite.svg#${item.icon || 'icon-note'}`,
+                href:   `/assets/icons/sprite.svg#${safeIcon(item.icon || 'icon-note')}`,
                 x:      String(mp.x - ICON_SZ / 2),
                 y:      String(mp.y - ICON_SZ / 2),
                 width:  String(ICON_SZ),

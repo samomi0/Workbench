@@ -508,6 +508,27 @@ function updateCount() {
 }
 
 load();
+
+// ── Relay middle-click for radial menu ───────────────────────
+document.addEventListener('mousedown', function(e) {
+    if (e.button !== 1) return;
+    e.preventDefault();
+    if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'iframe-mousedown', button: 1, x: e.clientX, y: e.clientY, altKey: e.altKey }, '*');
+    }
+});
+document.addEventListener('mouseup', function(e) {
+    if (e.button !== 1) return;
+    if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'iframe-mouseup', button: 1, x: e.clientX, y: e.clientY }, '*');
+    }
+});
+document.addEventListener('mousemove', function(e) {
+    if (e.buttons !== 4) return;
+    if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'iframe-mousemove', x: e.clientX, y: e.clientY }, '*');
+    }
+});
 </script>
 </body>
 </html>

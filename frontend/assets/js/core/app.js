@@ -7,8 +7,8 @@ import { bus }                 from './bus.js';
 import { api }                 from './api.js';
 import { RadialMenu }          from '../ui/radial-menu.js';
 import { PanelManager }        from '../ui/panel.js';
-import { FanMenu }             from '../ui/fan-menu.js';
 import { StickyBoard }         from '../ui/sticky-board.js';
+import { NavDock }             from '../ui/nav-dock.js';
 import { buildTagsContent }    from '../ui/tags.js';
 import { buildArchiveContent } from '../ui/archive.js';
 
@@ -21,7 +21,6 @@ document.addEventListener('keydown', (e) => {
 const canvas       = document.getElementById('wb-canvas');
 const hint         = document.getElementById('wb-hint');
 const pageFrame    = document.getElementById('wb-page-frame');
-const pageFab      = document.getElementById('wb-page-fab');
 const eventCapture = document.getElementById('wb-event-capture');
 
 // ── Event-capture helpers ─────────────────────────────────────────────────────
@@ -40,9 +39,24 @@ function disableCapture() {
 // ── Singletons ────────────────────────────────────────────────────────────────
 const panels = new PanelManager(canvas);
 
+// Store tools for page-switching (populated in init())
+let _tools = [];
+
 const menu = new RadialMenu({
     canvas,
     onClose: disableCapture,
+    onAltOpen: (x, y) => {
+        // Alt+middle-click → show page-switching radial menu
+        const items = [
+            { id: '_home', _home: true, icon: 'icon-note', name: '便签本', label: '便签本', action: () => switchPage({ id: '_home', _home: true, icon: 'icon-note', name: '便签本' }) },
+            ..._tools.map(t => ({
+                ...t,
+                label: t.name,
+                action: () => switchPage(t),
+            })),
+        ];
+        menu.open(x, y, items);
+    },
 });
 
 const board = new StickyBoard(canvas, {
@@ -50,10 +64,10 @@ const board = new StickyBoard(canvas, {
     onOpenArchive: openArchivePanel,
 });
 
-// FanMenu – guard against missing FAB element to avoid hard crashes.
-const fan = pageFab
-    ? new FanMenu({ fabEl: pageFab, onSelect: (item) => switchPage(item) })
-    : null;
+// NavDock – draggable search pill for page switching (bottom-left)
+const dock = new NavDock({
+    onSelect: (item) => switchPage(item),
+});
 
 // ── Relay middle-click mouse events from page iframes to the radial menu ──────
 window.addEventListener('message', (e) => {
@@ -62,7 +76,7 @@ window.addEventListener('message', (e) => {
 
     if (d.type === 'iframe-mousedown' && d.button === 1) {
         enableCapture(); // immediately – menu opens on press
-        menu.handleMousedown(d.x, d.y);
+        menu.handleMousedown(d.x, d.y, !!d.altKey);
 
     } else if (d.type === 'iframe-mouseup' && d.button === 1) {
         disableCapture();
@@ -103,7 +117,7 @@ function switchPage(tool) {
         pageFrame.src = '';
         board.show();
         menu.setItems(homeRadialItems());
-        fan?.setActive('_home');
+        dock.setActive('_home');
     } else {
         // Load tool in full-screen iframe
         board.hide();
@@ -113,7 +127,7 @@ function switchPage(tool) {
             { id: '__tags',    icon: 'icon-tag',    label: 'Tags',    action: openTagsPanel },
             { id: '__archive', icon: 'icon-archive', label: 'Archive', action: openArchivePanel },
         ]);
-        fan?.setActive(tool.id);
+        dock.setActive(tool.id);
     }
 
     hint.classList.add('is-hidden');
@@ -203,14 +217,13 @@ async function init() {
         if (res.ok) tools = await res.json();
     } catch (_) {}
 
-    // Home item + non-momento tools in the fan menu
-    const homeItem = { id: '_home', _home: true, icon: 'icon-note', name: '便签本', label: '便签本' };
-    const toolItems = tools
-        .filter(t => t.id !== 'momento')
-        .map(t => ({ ...t, label: t.name }));
+    // Store tools for Alt+middle-click page-switching radial menu
+    _tools = tools;
 
-    fan?.setItems([homeItem, ...toolItems]);
-    fan?.setActive('_home');
+    // Populate nav-dock with home + tools
+    const homeItem = { id: '_home', _home: true, icon: 'icon-note', name: '便签本', label: '便签本' };
+    dock.setItems([homeItem, ...tools.map(t => ({ ...t, label: t.name }))]);
+    dock.setActive('_home');
 }
 
 init();

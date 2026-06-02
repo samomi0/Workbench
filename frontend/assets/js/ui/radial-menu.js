@@ -20,6 +20,19 @@ const SVG_DIM   = SVG_HALF * 2;             // SVG width/height (220)
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+// Known valid icon IDs – used to fall back to icon-app for unknown / missing icons
+const VALID_ICON_IDS = new Set([
+    'icon-note', 'icon-tag', 'icon-archive', 'icon-close', 'icon-minimize',
+    'icon-expand', 'icon-plus', 'icon-trash', 'icon-check', 'icon-grip',
+    'icon-todo', 'icon-ticket', 'icon-hash', 'icon-search', 'icon-link',
+    'icon-download', 'icon-app',
+]);
+
+/** Return a safe icon id — falls back to 'icon-app' if unknown. */
+function safeIcon(id) {
+    return VALID_ICON_IDS.has(id) ? id : 'icon-app';
+}
+
 // ── Pure geometry helpers ─────────────────────────────────────────────────────
 
 /** Convert polar coords to {x, y}, rounded to 3 decimals. */
@@ -78,10 +91,13 @@ class RadialMenu {
     /**
      * @param {object}      opts
      * @param {HTMLElement} opts.canvas  Element to intercept right-click on.
+     * @param {Function}    [opts.onClose]  Called whenever the menu closes.
+     * @param {Function}    [opts.onAltOpen]  Called on Alt+middle-click (x, y) → should open with page-switch items.
      */
     constructor(opts = {}) {
         this._canvas    = opts.canvas || document.body;
         this._onClose   = opts.onClose || null;        // called whenever menu closes
+        this._onAltOpen = opts.onAltOpen || null;       // called on Alt+middle-click
         this._items     = [];
         this._isOpen    = false;
         this._overlay   = null;
@@ -91,6 +107,7 @@ class RadialMenu {
         this._holdOrigin  = null;   // {x, y} where mousedown happened
         this._lastOpenPos = null;   // preserved after close, for action callbacks
         this._dragMode    = false;  // true while middle button is held
+        this._altMode     = false;  // true when opened via Alt+middle-click
         this._sectorEls   = [];     // references to sector <g> elements
         this._hoveredIdx  = -1;     // currently drag-highlighted sector index
 
@@ -114,12 +131,19 @@ class RadialMenu {
     get openPos() { return this._lastOpenPos ? { ...this._lastOpenPos } : null; }
 
     /** Called by app.js when an iframe relays a middle-mousedown. */
-    handleMousedown(x, y) {
-        if (this._items.length === 0) return;
+    handleMousedown(x, y, altKey) {
+        if (this._items.length === 0 && !this._onAltOpen) return;
         this._holdOrigin  = { x, y };
         this._lastOpenPos = { x, y };
         this._dragMode    = true;
-        this.open(x, y, this._items);
+
+        if (altKey && this._onAltOpen) {
+            this._altMode = true;
+            this._onAltOpen(x, y);
+        } else if (this._items.length > 0) {
+            this._altMode = false;
+            this.open(x, y, this._items);
+        }
     }
 
     /** Called by app.js when an iframe relays a middle-mouseup. */
@@ -127,6 +151,7 @@ class RadialMenu {
         if (!this._dragMode || !this._isOpen) {
             this._holdOrigin = null;
             this._dragMode   = false;
+            this._altMode    = false;
             return;
         }
         const idx = this._hoveredIdx;
@@ -134,6 +159,7 @@ class RadialMenu {
         this._dragMode   = false;
         this._hoveredIdx = -1;
         this._holdOrigin = null;
+        this._altMode    = false;
         if (idx >= 0 && idx < this._items.length) {
             const action = this._items[idx].action;
             if (typeof action === 'function') setTimeout(action, 90);
@@ -210,21 +236,30 @@ class RadialMenu {
     }
 
     /** Bind middle-click on the canvas:
-     *  • Mousedown (button=1) → prevent auto-scroll, open menu immediately
+     *  • Alt+Middle-click → page-switching radial menu (via onAltOpen callback)
+     *  • Middle-click alone → context radial menu (current items)
      *  • Drag → highlight sector under cursor
-     *  • Mouseup (button=1) → activate highlighted sector and close
+     *  • Mouseup → activate highlighted sector and close
      */
     _bindCanvas() {
         this._canvas.addEventListener('mousedown', (e) => {
             if (e.button !== 1) return;
             e.preventDefault(); // stop browser auto-scroll cursor
             if (e.target.closest('.wb-panel')) return;
-            if (this._items.length === 0) return;
 
             this._holdOrigin  = { x: e.clientX, y: e.clientY };
             this._lastOpenPos = { x: e.clientX, y: e.clientY };
             this._dragMode    = true;
-            this.open(e.clientX, e.clientY, this._items);
+
+            if (e.altKey && this._onAltOpen) {
+                // Alt+middle-click → page switching
+                this._altMode = true;
+                this._onAltOpen(e.clientX, e.clientY);
+            } else if (this._items.length > 0) {
+                // Plain middle-click → context menu
+                this._altMode = false;
+                this.open(e.clientX, e.clientY, this._items);
+            }
         });
 
         // Capture mouseup globally so it fires even if cursor drifted
@@ -233,6 +268,7 @@ class RadialMenu {
             if (!this._dragMode || !this._isOpen) {
                 this._holdOrigin = null;
                 this._dragMode   = false;
+                this._altMode    = false;
                 return;
             }
             const idx = this._hoveredIdx;
@@ -240,6 +276,7 @@ class RadialMenu {
             this._dragMode   = false;
             this._hoveredIdx = -1;
             this._holdOrigin = null;
+            this._altMode    = false;
             if (idx >= 0 && idx < this._items.length) {
                 const action = this._items[idx].action;
                 if (typeof action === 'function') setTimeout(action, 90);
@@ -263,6 +300,7 @@ class RadialMenu {
     _forceClose() {
         const wasOpen = this._isOpen;
         this._dragMode   = false;
+        this._altMode    = false;
         this._hoveredIdx = -1;
         this._isOpen = false;
         this._container.classList.remove('is-open', 'is-closing');
@@ -324,11 +362,11 @@ class RadialMenu {
         });
         g.appendChild(path);
 
-        // Icon via external SVG sprite
+        // Icon via external SVG sprite (with fallback to icon-app)
         const mp = sectorMidpoint(idx, total);
         const iconEl = svgEl('use', {
             class:  'wb-radial-sector-icon',
-            href:   `/assets/icons/sprite.svg#${item.icon}`,
+            href:   `/assets/icons/sprite.svg#${safeIcon(item.icon)}`,
             x:      mp.x - ICON_SIZE / 2,
             y:      mp.y - ICON_SIZE / 2 - 3, // shift slightly toward center for label room
             width:  ICON_SIZE,
