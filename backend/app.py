@@ -12,6 +12,7 @@ from api.notes import router as notes_router
 from api.resources import router as resources_router
 from api.tags import router as tags_router
 from api.tools import router as tools_router
+from custom.registry import load_custom_routers
 from mock.registry import load_mock_services
 
 if config.DEV_MODE:
@@ -64,16 +65,19 @@ def root():
     return FileResponse(str(_fe / "index.html"))
 
 
-# ── Core API routers ─────────────────────────────────────────────────────────
-app.include_router(tools_router)
+# ── Core API routers (generic, version-controlled) ───────────────────────────
 app.include_router(tags_router)
 app.include_router(notes_router)
 app.include_router(resources_router)
 app.include_router(archive_router)
+app.include_router(tools_router)
 
-# To register a new API module, add two lines here:
+# To register a new generic API module, add two lines here:
 #   from api.my_module import router as my_router
 #   app.include_router(my_router)
+
+# ── Auto-discovered custom routers (business-specific, gitignored) ───────────
+load_custom_routers(app)
 
 # ── Auto-discovered mock services ────────────────────────────────────────────
 load_mock_services(app)
