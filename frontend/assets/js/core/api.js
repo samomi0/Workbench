@@ -30,6 +30,7 @@ export const api = {
     tags: {
         list:   ()                   => json('/api/tags'),
         create: (name, color)        => req('/api/tags', { method: 'POST', body: body({ name, color }) }),
+        update: (id, data)           => json(`/api/tags/${id}`, { method: 'PUT',  body: body(data) }),
         delete: (id)                 => req(`/api/tags/${id}`, { method: 'DELETE' }),
     },
 

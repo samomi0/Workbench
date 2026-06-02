@@ -36,7 +36,7 @@ class NoteCreate(BaseModel):
     y: int = 100
     w: Optional[int] = None
     h: Optional[int] = None
-    color: str = "#fef08a"
+    color: str = "#d4c9b5"
     tag_ids: List[str] = []
     text: Optional[str] = None
     items: Optional[List[Any]] = None

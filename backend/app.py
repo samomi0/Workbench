@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 import config
 from api.archive import router as archive_router
@@ -40,6 +41,22 @@ _fe = config.FRONTEND_DIR
 
 app.mount("/assets", StaticFiles(directory=str(_fe / "assets")), name="assets")
 app.mount("/tools", StaticFiles(directory=str(_fe / "tools"), html=True), name="tools")
+
+
+# ── No-cache middleware for static assets (dev convenience) ────────────────────
+if config.DEV_MODE:
+    from starlette.datastructures import MutableHeaders
+
+    class NoCacheMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request, call_next):
+            response = await call_next(request)
+            if request.url.path.startswith(("/assets/", "/tools/")):
+                response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+                response.headers["Pragma"] = "no-cache"
+                response.headers["Expires"] = "0"
+            return response
+
+    app.add_middleware(NoCacheMiddleware)
 
 
 @app.get("/", include_in_schema=False)

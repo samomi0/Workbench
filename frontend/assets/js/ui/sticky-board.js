@@ -6,40 +6,9 @@
 
 import { api } from '../core/api.js';
 import { bus } from '../core/bus.js';
+import { ColorWheel, randomMorandi, MORANDI_LINK_PALETTE } from './color-wheel.js';
 
-const NOTE_COLORS = ['#fef08a', '#bbf7d0', '#bae6fd', '#e9d5ff', '#fecaca', '#fed7aa'];
-const NOTE_W      = 260;   // default note width (px)
-
-// Palette for ticket link button colours (index 0 = default blue)
-const LINK_PALETTE = [
-    { bg: 'rgba(219,234,254,0.55)', border: 'rgba(37,99,235,0.35)',  text: '#1d4ed8' }, // blue
-    { bg: 'rgba(220,252,231,0.55)', border: 'rgba(22,163,74,0.35)',  text: '#15803d' }, // green
-    { bg: 'rgba(254,243,199,0.55)', border: 'rgba(217,119,6,0.40)',  text: '#92400e' }, // amber
-    { bg: 'rgba(243,232,255,0.55)', border: 'rgba(126,34,206,0.35)', text: '#6b21a8' }, // purple
-    { bg: 'rgba(254,226,226,0.55)', border: 'rgba(220,38,38,0.35)',  text: '#b91c1c' }, // red
-    { bg: 'rgba(204,251,241,0.55)', border: 'rgba(13,148,136,0.35)', text: '#0f766e' }, // teal
-];
-
-// HSL helpers for the colour wheel picker
-function _hslToRgb(h, s, l) {
-    const c = (1 - Math.abs(2 * l - 1)) * s;
-    const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
-    const m = l - c / 2;
-    let r = 0, g = 0, b = 0;
-    const h6 = h * 6;
-    if      (h6 < 1) { r = c; g = x; b = 0; }
-    else if (h6 < 2) { r = x; g = c; b = 0; }
-    else if (h6 < 3) { r = 0; g = c; b = x; }
-    else if (h6 < 4) { r = 0; g = x; b = c; }
-    else if (h6 < 5) { r = x; g = 0; b = c; }
-    else             { r = c; g = 0; b = x; }
-    return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
-}
-
-function _hslToHex(h, s, l) {
-    const [r, g, b] = _hslToRgb(h, s, l);
-    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
-}
+const NOTE_W = 260;   // default note width (px)
 
 let _zTop = 100;
 
@@ -54,10 +23,17 @@ export class StickyBoard {
         this._els           = new Map();
         this._onOpenTags    = opts.onOpenTags    || (() => {});
         this._onOpenArchive = opts.onOpenArchive || (() => {});
+        this._tagsCache     = null;
 
         this._layer = document.createElement('div');
         this._layer.className = 'wb-sticky-layer';
         this._canvas.appendChild(this._layer);
+
+        // Refresh tag badges when tags are created/deleted elsewhere
+        bus.on('tags:updated', () => {
+            this._tagsCache = null;
+            this._refreshAllTagBadges();
+        });
 
         this._load();
     }
@@ -77,7 +53,7 @@ export class StickyBoard {
     async createNote(pos, type = 'note') {
         const { nx, ny } = this._clampPos(pos);
 
-        const data = { type, x: nx, y: ny, color: NOTE_COLORS[0] };
+        const data = { type, x: nx, y: ny, color: randomMorandi() };
         if (type === 'note')   data.text    = '';
         if (type === 'todo')   data.items   = [];
         if (type === 'ticket') { data.content = ''; data.links = []; }
@@ -103,7 +79,7 @@ export class StickyBoard {
         const { nx, ny } = this._clampPos(pos);
         try {
             const note = await api.notes.create({
-                type: 'note', x: nx, y: ny, color: '#f8fafc', text: '', images: [],
+                type: 'note', x: nx, y: ny, color: randomMorandi(), text: '', images: [],
             });
             this._notes.push(note);
             this._renderNote(note);
@@ -202,6 +178,9 @@ export class StickyBoard {
         }
         el.appendChild(body);
 
+        // Tag badges row
+        this._renderTagBadges(el, note);
+
         this._makeResizable(el, note);
         this._makeDraggable(el, el.querySelector('.wb-sticky-head'), note);
         this._layer.appendChild(el);
@@ -221,9 +200,9 @@ export class StickyBoard {
         colorBtn.className        = 'wb-color-btn';
         colorBtn.title            = '更改颜色';
         colorBtn.style.background = note.color;
-        colorBtn.addEventListener('mousedown', e => e.stopPropagation());
-        colorBtn.addEventListener('click', e => {
+        colorBtn.addEventListener('mousedown', e => {
             e.stopPropagation();
+            e.preventDefault();
             this._openColorWheel(note, colorBtn, head);
         });
         head.appendChild(colorBtn);
@@ -232,7 +211,7 @@ export class StickyBoard {
         spacer.style.flex = '1';
         head.appendChild(spacer);
 
-        // ── Tool buttons: tag / archive ─────────────────────────────────────
+        // ── Tool buttons: tag / archive / delete ────────────────────────────
         const tools = document.createElement('div');
         tools.className = 'wb-sticky-tools';
 
@@ -250,6 +229,30 @@ export class StickyBoard {
         arcBtn.addEventListener('click', e => { e.stopPropagation(); this._archiveNote(note); });
         tools.appendChild(arcBtn);
 
+        // Delete button — requires double-click to confirm
+        const delBtn = this._mkToolBtn(
+            `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+            '删除',
+        );
+        let delPending = false;
+        delBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            if (!delPending) {
+                delPending = true;
+                delBtn.classList.add('is-confirm');
+                delBtn.title = '再次点击删除';
+                setTimeout(() => {
+                    delPending = false;
+                    delBtn.classList.remove('is-confirm');
+                    delBtn.title = '删除';
+                }, 2500);
+            } else {
+                delBtn.classList.remove('is-confirm');
+                this._deleteNote(note.id);
+            }
+        });
+        tools.appendChild(delBtn);
+
         head.appendChild(tools);
         return head;
     }
@@ -263,100 +266,94 @@ export class StickyBoard {
         return btn;
     }
 
-    // ── Colour wheel picker ───────────────────────────────────────────────────
+    // ── Tag badges rendered on each note ──────────────────────────────────────
+
+    /** Render coloured tag pills for a note.  Fetches tag details lazily. */
+    async _renderTagBadges(el, note) {
+        const tagIds = note.tag_ids || [];
+        // Remove old badges
+        el.querySelector('.wb-sticky-tags')?.remove();
+        if (tagIds.length === 0) return;
+
+        // Find the body element to insert after
+        const body = el.querySelector('.wb-sticky-body');
+        if (!body) return;
+
+        const tagsData = await this._getAllTags();
+        const row = document.createElement('div');
+        row.className = 'wb-sticky-tags';
+
+        for (const tid of tagIds) {
+            const tag = tagsData.find(t => t.id === tid);
+            if (!tag) continue;
+            const pill = document.createElement('span');
+            pill.className = 'wb-sticky-tag-pill';
+            pill.textContent = tag.name;
+            pill.style.background = tag.color || '#8492a6';
+            pill.title = `移除标签 "${tag.name}"`;
+            pill.addEventListener('click', e => {
+                e.stopPropagation();
+                note.tag_ids = (note.tag_ids || []).filter(id => id !== tid);
+                pill.remove();
+                this._scheduleSync(note);
+                // Remove whole row if empty
+                if (row.children.length === 0) row.remove();
+            });
+            row.appendChild(pill);
+        }
+
+        body.after(row);
+    }
+
+    /** Refresh tag badges on all rendered notes (called on tags:updated). */
+    _refreshAllTagBadges() {
+        this._els.forEach((el, id) => {
+            const note = this._notes.find(n => n.id === id);
+            if (note) this._renderTagBadges(el, note);
+        });
+    }
+
+    /** Fetch tags list with simple cache. */
+    async _getAllTags() {
+        if (!this._tagsCache) {
+            try { this._tagsCache = await api.tags.list(); } catch (_) { this._tagsCache = []; }
+        }
+        return this._tagsCache;
+    }
+
+    // ── Colour wheel picker (press & hold + drag) ────────────────────────────
 
     _openColorWheel(note, anchor, head) {
-        document.querySelector('.wb-color-wheel-overlay')?.remove();
-        this._colorWheelCleanup?.();
+        // Create a fresh colour wheel each time so callbacks capture the right note
+        const wheel = new ColorWheel({
+            onPick: (hex) => {
+                note.color              = hex;
+                head.style.background   = hex;
+                anchor.style.background = hex;
+                this._scheduleSync(note);
+            },
+            onPreview: (hex) => {
+                head.style.background   = hex;
+                anchor.style.background = hex;
+            },
+        });
 
-        const SIZE = 140;
-        const R    = SIZE / 2;
-        const L    = 0.87; // fixed lightness → pleasant pastel tones
+        const onMove = e => { if (wheel.isOpen) wheel.updateDrag(e.clientX, e.clientY); };
+        const onUp   = ()  => { if (wheel.isOpen) wheel.close(); };
 
-        const overlay = document.createElement('div');
-        overlay.className = 'wb-color-wheel-overlay';
-
-        const canvas = document.createElement('canvas');
-        canvas.width  = SIZE;
-        canvas.height = SIZE;
-        canvas.className = 'wb-color-wheel-canvas';
-        overlay.appendChild(canvas);
-
-        // Draw HSL wheel: hue = angle, saturation = radius, lightness fixed
-        const ctx     = canvas.getContext('2d');
-        const imgData = ctx.createImageData(SIZE, SIZE);
-        for (let y = 0; y < SIZE; y++) {
-            for (let x = 0; x < SIZE; x++) {
-                const dx   = x - R;
-                const dy   = y - R;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist > R) continue;
-                const h           = (Math.atan2(dy, dx) / (Math.PI * 2) + 1) % 1;
-                const s           = dist / R;
-                const [r, g, b]   = _hslToRgb(h, s, L);
-                const i           = (y * SIZE + x) * 4;
-                imgData.data[i]     = r;
-                imgData.data[i + 1] = g;
-                imgData.data[i + 2] = b;
-                imgData.data[i + 3] = 255;
-            }
-        }
-        ctx.putImageData(imgData, 0, 0);
-        ctx.beginPath();
-        ctx.arc(R, R, R - 0.5, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-        ctx.lineWidth   = 1;
-        ctx.stroke();
-
-        // Position below anchor, clamped within viewport
-        const rect = anchor.getBoundingClientRect();
-        const ox   = Math.max(4, Math.min(rect.left - R + 10, window.innerWidth  - SIZE - 4));
-        const oy   = Math.max(4, Math.min(rect.bottom + 6,    window.innerHeight - SIZE - 4));
-        overlay.style.left = ox + 'px';
-        overlay.style.top  = oy + 'px';
-        document.body.appendChild(overlay);
-
-        const pick = (cx, cy) => {
-            const cr  = canvas.getBoundingClientRect();
-            const dx  = cx - cr.left - R;
-            const dy  = cy - cr.top  - R;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const h   = (Math.atan2(dy, dx) / (Math.PI * 2) + 1) % 1;
-            const s   = Math.min(dist / R, 1);
-            const hex = _hslToHex(h, s, L);
-            note.color              = hex;
-            head.style.background   = hex;
-            anchor.style.background = hex;
-            this._scheduleSync(note);
+        const cleanup = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup',   onUp);
         };
 
-        let dragging = false;
-        const onDown = (e) => {
-            if (e.button !== 0) return;
-            e.preventDefault(); e.stopPropagation();
-            dragging = true;
-            pick(e.clientX, e.clientY);
-        };
-        const onMove = (e) => { if (dragging) pick(e.clientX, e.clientY); };
-        const onUp   = ()  => { if (dragging) { dragging = false; cleanup(); } };
+        // Re-cleanup when wheel naturally closes (via its own close animation)
+        const origClose = wheel.close.bind(wheel);
+        wheel.close = () => { origClose(); cleanup(); };
 
-        canvas.addEventListener('mousedown', onDown);
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup',   onUp);
 
-        const onOutside = (e) => {
-            if (!overlay.contains(e.target) && e.target !== anchor) cleanup();
-        };
-        setTimeout(() => document.addEventListener('mousedown', onOutside, true), 0);
-
-        const cleanup = () => {
-            overlay.remove();
-            document.removeEventListener('mousemove', onMove);
-            document.removeEventListener('mouseup',   onUp);
-            document.removeEventListener('mousedown', onOutside, true);
-            this._colorWheelCleanup = null;
-        };
-        this._colorWheelCleanup = cleanup;
+        wheel.open(null, anchor);
     }
 
     // ── Text note body (supports text + multiple inline images) ──────────────
@@ -437,7 +434,7 @@ export class StickyBoard {
     }
 
     async _createLegacyImageNote(pos, blob) {
-        const note = await api.notes.create({ type: 'image', x: pos.x, y: pos.y, color: '#f8fafc' });
+        const note = await api.notes.create({ type: 'image', x: pos.x, y: pos.y, color: randomMorandi() });
         const result = await api.notes.uploadImage(note.id, blob);
         note.image_ext = result.image_ext;
         this._notes.push(note);
@@ -592,7 +589,7 @@ export class StickyBoard {
     }
 
     _mkLinkBtn(note, link) {
-        const palette = LINK_PALETTE[link.colorIdx ?? 0] ?? LINK_PALETTE[0];
+        const palette = this._hexToLinkPalette(link.colorHex || '#d4c9b5');
         const btn     = document.createElement('button');
         btn.className         = 'wb-ticket-link-btn';
         btn.title             = link.url;
@@ -633,6 +630,31 @@ export class StickyBoard {
         return btn;
     }
 
+    /** Derive a link-palette entry {bg, border, text} from a hex colour. */
+    _hexToLinkPalette(hex) {
+        const r = parseInt(hex.slice(1, 3), 16) / 255;
+        const g = parseInt(hex.slice(3, 5), 16) / 255;
+        const b = parseInt(hex.slice(5, 7), 16) / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const l = (max + min) / 2;
+        let h = 0, s = 0;
+        if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = ((g - b) / d + (g < b ? 6 : 0)) * 60; break;
+                case g: h = ((b - r) / d + 2) * 60; break;
+                case b: h = ((r - g) / d + 4) * 60; break;
+            }
+        }
+        const H = Math.round(h), S = Math.round(s * 100), L = Math.round(l * 100);
+        return {
+            bg:     `hsla(${H},${S}%,${L}%,0.45)`,
+            border: `hsla(${H},${Math.round(s*80)}%,${Math.round(l*70)}%,0.35)`,
+            text:   `hsl(${H},${Math.round(s*60)}%,${Math.round(l*35)}%)`,
+        };
+    }
+
     _showAddLinkForm(note, linkArea, addBtn) {
         if (linkArea.querySelector('.wb-ticket-link-form')) return;
         addBtn.style.display = 'none';
@@ -658,36 +680,59 @@ export class StickyBoard {
         cancelBtn.textContent = '✕';
         cancelBtn.className   = 'wb-ticket-form-cancel';
 
-        // ── Colour swatches ────────────────────────────────────────────────
-        let selectedColorIdx = 0;
+        // ── Colour picker for link ──────────────────────────────────────
+        let selectedHex = MORANDI_LINK_PALETTE[0].text;
         const colorRow = document.createElement('div');
         colorRow.className = 'wb-link-color-row';
-        LINK_PALETTE.forEach((p, i) => {
-            const sw = document.createElement('button');
-            sw.className        = 'wb-link-color-swatch' + (i === 0 ? ' is-selected' : '');
-            sw.style.background = p.bg;
-            sw.style.outline    = i === 0 ? `2px solid ${p.text}` : '2px solid transparent';
-            sw.title            = '';
-            sw.addEventListener('mousedown', e => e.stopPropagation());
-            sw.addEventListener('click', e => {
-                e.stopPropagation();
-                selectedColorIdx = i;
-                colorRow.querySelectorAll('.wb-link-color-swatch').forEach((s, j) => {
-                    s.classList.toggle('is-selected', j === i);
-                    s.style.outline = j === i ? `2px solid ${LINK_PALETTE[j].text}` : '2px solid transparent';
-                });
-            });
-            colorRow.appendChild(sw);
+
+        const colorBtn = document.createElement('button');
+        colorBtn.className = 'wb-link-color-btn';
+        colorBtn.title     = '选择颜色';
+        const p0 = MORANDI_LINK_PALETTE[0];
+        colorBtn.style.background = p0.bg;
+        colorBtn.style.border     = `2px solid ${p0.text}`;
+
+        const linkWheel = new ColorWheel({
+            onPick: (hex) => {
+                selectedHex = hex;
+                const p = this._hexToLinkPalette(hex);
+                colorBtn.style.background = p.bg;
+                colorBtn.style.border     = `2px solid ${p.text}`;
+            },
+            onPreview: (hex) => {
+                const p = this._hexToLinkPalette(hex);
+                colorBtn.style.background = p.bg;
+                colorBtn.style.border     = `2px solid ${p.text}`;
+            },
         });
 
-        const close = () => { form.remove(); addBtn.style.display = ''; };
+        colorBtn.addEventListener('mousedown', e => {
+            e.stopPropagation();
+            e.preventDefault();
+            linkWheel.open(null, colorBtn);
+        });
+
+        // Global listeners for the link colour wheel
+        const onLinkMove = e => { if (linkWheel.isOpen) linkWheel.updateDrag(e.clientX, e.clientY); };
+        const onLinkUp   = ()  => { if (linkWheel.isOpen) linkWheel.close(); };
+        document.addEventListener('mousemove', onLinkMove);
+        document.addEventListener('mouseup',   onLinkUp);
+
+        colorRow.appendChild(colorBtn);
+
+        const close = () => {
+            document.removeEventListener('mousemove', onLinkMove);
+            document.removeEventListener('mouseup',   onLinkUp);
+            form.remove();
+            addBtn.style.display = '';
+        };
 
         okBtn.addEventListener('click', e => {
             e.stopPropagation();
             const url = urlInput.value.trim();
             if (!url) { urlInput.focus(); return; }
             const label = labelInput.value.trim() || url;
-            const link  = { id: 'lk' + Date.now(), label, url, colorIdx: selectedColorIdx };
+            const link  = { id: 'lk' + Date.now(), label, url, colorHex: selectedHex };
             note.links.push(link);
             linkArea.insertBefore(this._mkLinkBtn(note, link), form);
             close();
@@ -811,26 +856,28 @@ export class StickyBoard {
         createRow.append(nameInput, colorInput, addTagBtn);
         dd.appendChild(createRow); // bottom anchor — tags insert before it
 
-        // ── Tag-row factory ──────────────────────────────────────────────────
-        const addTagRow = (tag) => {
-            const lbl = document.createElement('label');
-            lbl.className = 'wb-tag-dd-row';
-            const cb = document.createElement('input');
-            cb.type    = 'checkbox';
-            cb.checked = (note.tag_ids || []).includes(tag.id);
-            cb.addEventListener('change', () => {
-                const set = new Set(note.tag_ids || []);
-                if (cb.checked) set.add(tag.id); else set.delete(tag.id);
-                note.tag_ids = [...set];
-                this._scheduleSync(note);
+        // ── Tag-pill factory (capsule style, consistent with board display) ──
+        const toggleTagOnNote = (tag) => {
+            const set = new Set(note.tag_ids || []);
+            if (set.has(tag.id)) set.delete(tag.id); else set.add(tag.id);
+            note.tag_ids = [...set];
+            this._scheduleSync(note);
+            const el = this._els.get(note.id);
+            if (el) this._renderTagBadges(el, note);
+        };
+
+        const addTagPill = (tag) => {
+            const pill = document.createElement('span');
+            pill.className = 'wb-tag-dd-pill';
+            pill.textContent = tag.name;
+            pill.style.background = tag.color || '#8492a6';
+            if ((note.tag_ids || []).includes(tag.id)) pill.classList.add('is-active');
+            pill.addEventListener('mousedown', e => e.stopPropagation());
+            pill.addEventListener('click', () => {
+                toggleTagOnNote(tag);
+                pill.classList.toggle('is-active', (note.tag_ids || []).includes(tag.id));
             });
-            const dot = document.createElement('span');
-            dot.className        = 'wb-tag-dd-dot';
-            dot.style.background = tag.color || '#2563eb';
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = tag.name;
-            lbl.append(cb, dot, nameSpan);
-            dd.insertBefore(lbl, createRow);
+            dd.insertBefore(pill, createRow);
         };
 
         // ── Create-tag action ─────────────────────────────────────────────────
@@ -841,7 +888,7 @@ export class StickyBoard {
             try {
                 const newTag = await api.tags.create(name, colorInput.value);
                 tags.push(newTag);
-                addTagRow(newTag);
+                addTagPill(newTag);
                 nameInput.value = '';
                 dd.querySelector('.wb-tag-dd-empty')?.remove();
                 bus.emit('tags:updated');
@@ -870,7 +917,7 @@ export class StickyBoard {
             msg.textContent = '暂无标签';
             dd.insertBefore(msg, createRow);
         } else {
-            tags.forEach(tag => addTagRow(tag));
+            tags.forEach(tag => addTagPill(tag));
         }
 
         const rect    = anchor.getBoundingClientRect();

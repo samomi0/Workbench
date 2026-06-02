@@ -1,0 +1,50 @@
+/* ── Colour Wheel Picker ─────────────────────────────────────────────────── */
+/* Interaction: press & hold trigger → wheel appears around trigger → drag → release to pick */
+/* Canvas-based continuous HSL colour wheel (hue × saturation)                */
+
+.wb-cw-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-radial) - 1);
+    cursor: crosshair;
+}
+
+.wb-cw-overlay.is-active {
+    display: block;
+}
+
+.wb-cw-container {
+    position: fixed;
+    z-index: var(--z-radial);
+    pointer-events: none;
+
+    translate: -50% -50%;
+
+    scale:   0.15;
+    opacity: 0;
+    transition:
+        scale   var(--dur-base) var(--ease-spring),
+        opacity var(--dur-fast) var(--ease-out);
+}
+
+.wb-cw-container.is-open {
+    scale:   1;
+    opacity: 1;
+}
+
+.wb-cw-container.is-closing {
+    scale:   0.15;
+    opacity: 0;
+    transition:
+        scale   var(--dur-fast) var(--ease-out),
+        opacity var(--dur-fast) var(--ease-out);
+}
+
+/* ── Canvas colour wheel ──────────────────────────── */
+.wb-cw-canvas {
+    display: block;
+    border-radius: 50%;
+    filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.15));
+    image-rendering: auto;
+}

@@ -35,15 +35,22 @@
 
 .wb-syspanel-input:focus { border-color: var(--primary); }
 
-.wb-syspanel-color {
-    width: 28px;
-    height: 28px;
-    padding: 2px;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    background: none;
+.wb-syspanel-color-btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 2px solid rgba(0,0,0,0.18);
+    border-radius: 50%;
     cursor: pointer;
     flex-shrink: 0;
+    outline: none;
+    transition: transform var(--dur-fast) var(--ease-spring),
+                border-color var(--dur-fast) ease;
+}
+
+.wb-syspanel-color-btn:hover {
+    transform: scale(1.2);
+    border-color: rgba(0,0,0,0.40);
 }
 
 .wb-syspanel-btn {

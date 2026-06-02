@@ -21,6 +21,17 @@
     --danger:        #ef4444;
     --success:       #22c55e;
 
+    /* ── Morandi palette ────────────────────────── */
+    --morandi-beige:    #d4c9b5;
+    --morandi-sage:     #b5c4b1;
+    --morandi-blue:     #a8b5c8;
+    --morandi-lavender: #c4c0d0;
+    --morandi-ochre:    #d4b896;
+    --morandi-rose:     #d4a5a5;
+    --morandi-olive:    #c4c9b6;
+    --morandi-slate:    #b0bec5;
+    --morandi-wheat:    #d9cdb3;
+
     /* ── Radial menu ─────────────────────────────── */
     --radial-sector-bg:    rgba(255, 255, 255, 0.93);
     --radial-sector-hover: rgba(37, 99, 235, 0.10);

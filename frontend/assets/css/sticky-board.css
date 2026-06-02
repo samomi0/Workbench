@@ -58,21 +58,6 @@
     border-color: rgba(0,0,0,0.40);
 }
 
-/* ── Colour wheel overlay ──────────────────────────────────── */
-.wb-color-wheel-overlay {
-    position: fixed;
-    z-index: 9999;
-    border-radius: 50%;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.22);
-    cursor: crosshair;
-    user-select: none;
-}
-
-.wb-color-wheel-canvas {
-    display: block;
-    border-radius: 50%;
-}
-
 /* ── Tool buttons (tag / archive / delete) ─────────────────── */
 .wb-sticky-tools {
     display: flex;
@@ -101,6 +86,45 @@
 .wb-sticky-tool-btn:hover {
     background: rgba(0,0,0,0.10);
     color: rgba(0,0,0,0.60);
+}
+
+.wb-sticky-tool-btn.is-confirm {
+    background: rgba(239,68,68,0.18);
+    color: #ef4444;
+}
+
+.wb-sticky-tool-btn.is-confirm:hover {
+    background: rgba(239,68,68,0.28);
+    color: #dc2626;
+}
+
+/* ── Tag badges row ──────────────────────────────────────── */
+.wb-sticky-tags {
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+    justify-content: start;
+    gap: 4px;
+    padding: 0 8px 6px;
+}
+
+.wb-sticky-tag-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: var(--fs-xs);
+    font-family: var(--font-ui);
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+    opacity: 0.88;
+    transition: opacity var(--dur-fast) ease;
+    line-height: 1.4;
+}
+
+.wb-sticky-tag-pill:hover {
+    opacity: 1;
+    filter: brightness(0.9);
 }
 
 /* ── Body container ────────────────────────────────────────── */
@@ -406,49 +430,49 @@
     border: 1px solid rgba(0,0,0,0.12);
     border-radius: 7px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    padding: 5px 0;
-    min-width: 160px;
-    max-height: 240px;
+    padding: 6px;
+    min-width: 180px;
+    max-height: 280px;
     overflow-y: auto;
-}
-
-.wb-tag-dd-row {
     display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-content: flex-start;
+}
+
+/* ── Tag pill in dropdown (matches .wb-sticky-tag-pill capsule style) ── */
+.wb-tag-dd-pill {
+    display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 6px 12px;
-    cursor: pointer;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: var(--fs-xs);
     font-family: var(--font-ui);
-    font-size: var(--fs-base);
-    color: var(--text);
-    transition: background var(--dur-fast) ease;
-    user-select: none;
-}
-
-.wb-tag-dd-row:hover { background: rgba(0,0,0,0.05); }
-
-.wb-tag-dd-row input[type="checkbox"] {
-    width: 13px;
-    height: 13px;
-    flex-shrink: 0;
-    accent-color: var(--primary);
+    color: #fff;
     cursor: pointer;
-    margin: 0;
+    user-select: none;
+    opacity: 0.55;
+    transition: opacity var(--dur-fast) ease, filter var(--dur-fast) ease;
+    line-height: 1.4;
+    white-space: nowrap;
 }
 
-.wb-tag-dd-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: inline-block;
+.wb-tag-dd-pill:hover {
+    opacity: 0.85;
+}
+
+.wb-tag-dd-pill.is-active {
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.55), 0 0 0 4px currentColor;
 }
 
 .wb-tag-dd-empty {
-    padding: 10px 14px;
+    width: 100%;
+    padding: 14px 10px;
     font-size: 12px;
     color: var(--muted);
     font-family: var(--font-ui);
+    text-align: center;
 }
 
 /* ── Inline tag-create row ─────────────────────────────────── */
@@ -456,8 +480,10 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    padding: 6px 8px;
+    padding: 5px 2px 0;
     border-top: 1px solid rgba(0,0,0,0.07);
+    width: 100%;
+    margin-top: 2px;
 }
 
 .wb-tag-dd-create-input {
@@ -510,7 +536,7 @@
 .wb-tag-dd-add-btn:hover { background: rgba(37,99,235,0.12); color: var(--primary); }
 .wb-tag-dd-add-btn:disabled { opacity: 0.45; cursor: default; }
 
-/* ── Ticket link colour swatches ───────────────────────────── */
+/* ── Ticket link colour picker ─────────────────────────────── */
 .wb-link-color-row {
     display: flex;
     gap: 5px;
@@ -519,21 +545,23 @@
     width: 100%;
 }
 
-.wb-link-color-swatch {
-    width: 16px;
-    height: 16px;
+.wb-link-color-btn {
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    border: none;
-    outline: 2px solid transparent;
-    outline-offset: 1px;
+    border: 2px solid rgba(0,0,0,0.2);
     cursor: pointer;
     padding: 0;
     flex-shrink: 0;
-    transition: transform var(--dur-fast) ease, outline-color var(--dur-fast) ease;
+    outline: none;
+    transition: transform var(--dur-fast) var(--ease-spring),
+                border-color var(--dur-fast) ease;
 }
 
-.wb-link-color-swatch:hover { transform: scale(1.2); }
-.wb-link-color-swatch.is-selected { transform: scale(1.15); }
+.wb-link-color-btn:hover {
+    transform: scale(1.2);
+    border-color: rgba(0,0,0,0.4);
+}
 
 /* ── Resize handle ─────────────────────────────────── */
 .wb-sticky-resize-handle {

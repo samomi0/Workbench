@@ -1,0 +1,7 @@
+{
+  "id": "tag-manager",
+  "name": "标签管理",
+  "icon": "icon-tag",
+  "description": "Manage all tags — create, edit, delete and view usage",
+  "version": "1.0"
+}

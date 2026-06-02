@@ -1,0 +1,1 @@
+set DEV_MODE=true && set PORT=11111 && set DATA_DIR=d:\plus\Workbench\data && python -m uvicorn app:app --host 0.0.0.0 --port 11111 --reload --app-dir backend
