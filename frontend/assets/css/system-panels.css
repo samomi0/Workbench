@@ -143,61 +143,201 @@
 .wb-tag-item:hover .wb-tag-del { opacity: 1; }
 .wb-tag-del:hover               { color: var(--danger); }
 
-/* ── Archive panel specifics ─────────────────────────────────────────────── */
-.wb-archive-section {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex-shrink: 0;
-}
-
-.wb-archive-section.is-grow {
-    flex: 1;
-    min-height: 0;
-}
-
-.wb-archive-label {
-    font-size: var(--fs-xs);
-    font-weight: 600;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 0 2px;
-}
-
-.wb-archive-tags {
-    flex: 1;
-    overflow-y: auto;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--bg-canvas);
-    padding: 4px;
-    min-height: 0;
-}
-
-.wb-archive-tag-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 6px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background var(--dur-fast) ease;
-}
-
-.wb-archive-tag-row:hover { background: var(--bg-panel); }
-
-.wb-archive-tag-row input[type="checkbox"] {
-    accent-color: var(--primary);
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.wb-archive-bottom {
+/* ── Archive panel ─────────────────────────────────────────────────────────── */
+.wb-archive-toolbar {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
 }
 
-.wb-archive-bottom .wb-syspanel-input { flex: 1; }
+.wb-archive-toolbar .wb-syspanel-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.wb-archive-select {
+    height: 28px;
+    padding: 0 6px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: var(--fs-sm);
+    font-family: var(--font-ui);
+    background: var(--bg-canvas);
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    max-width: 100px;
+    flex-shrink: 0;
+}
+
+.wb-archive-select:focus { border-color: var(--primary); }
+
+/* Select-all row */
+.wb-archive-selrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 4px;
+    flex-shrink: 0;
+}
+
+.wb-archive-selall-cb {
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.wb-archive-sel-label {
+    font-size: var(--fs-sm);
+    color: var(--muted);
+    user-select: none;
+    cursor: pointer;
+}
+
+.wb-archive-restore-btn {
+    margin-left: auto;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--primary);
+    font-size: var(--fs-xs);
+    font-family: var(--font-ui);
+    cursor: pointer;
+    transition: background var(--dur-fast) ease;
+    outline: none;
+}
+
+.wb-archive-restore-btn:hover {
+    background: var(--primary-dim);
+}
+
+/* ── Archive list ──────────────────────────────────────────────────────── */
+.wb-archive-list-wrap {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.wb-archive-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.wb-archive-empty {
+    padding: 28px 12px;
+    text-align: center;
+    font-size: var(--fs-sm);
+    color: var(--muted);
+    opacity: 0.6;
+}
+
+/* ── Archive card ──────────────────────────────────────────────────────── */
+.wb-archive-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-canvas);
+    transition: background var(--dur-fast) ease;
+}
+
+.wb-archive-card:hover {
+    background: var(--bg-panel);
+}
+
+.wb-archive-card-cb {
+    accent-color: var(--primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.wb-archive-type-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--muted);
+    opacity: 0.6;
+}
+
+/* Preview area */
+.wb-archive-preview {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wb-archive-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wb-archive-preview.is-text {
+    padding: 4px;
+}
+
+.wb-archive-snippet {
+    font-size: 9px;
+    line-height: 1.35;
+    color: var(--muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-all;
+}
+
+/* Info area */
+.wb-archive-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.wb-archive-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wb-archive-type-badge {
+    display: inline-flex;
+    padding: 1px 8px;
+    border-radius: 3px;
+    font-size: var(--fs-xs);
+    font-family: var(--font-ui);
+    font-weight: 500;
+    color: #fff;
+    white-space: nowrap;
+    opacity: 0.85;
+}
+
+/* Tag pills in card */
+.wb-archive-tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.wb-archive-tag-pill {
+    display: inline-flex;
+    padding: 1px 7px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-family: var(--font-ui);
+    color: #fff;
+    white-space: nowrap;
+    opacity: 0.82;
+}

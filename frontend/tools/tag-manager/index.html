@@ -55,10 +55,18 @@ body {
 /* ── Toolbar / Create row ────────────────────────────────────── */
 .tm-toolbar {
     display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 20px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.6);
+    border-bottom: 1px solid var(--border, #e4e7ed);
+}
+
+.tm-toolbar-row {
+    display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
-    flex-shrink: 0;
 }
 
 .tm-input {
@@ -66,42 +74,55 @@ body {
     height: 32px;
     padding: 0 10px;
     border: 1px solid var(--border, #e4e7ed);
-    border-radius: 6px;
+    border-radius: 7px;
     font-size: var(--fs-base, 13px);
     background: #fff;
     color: var(--text);
     outline: none;
-    transition: border-color var(--dur-fast) ease;
+    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
     font-family: var(--font-ui);
 }
-.tm-input:focus { border-color: var(--primary); }
+.tm-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+.tm-input::placeholder { color: var(--muted); }
+
+.tm-color-label {
+    font-size: 11px;
+    color: var(--muted, #8492a6);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
 
 .tm-color-swatches {
     display: flex;
-    gap: 4px;
+    gap: 5px;
     align-items: center;
-    flex-shrink: 0;
+    flex-wrap: wrap;
+    flex: 1;
 }
 
 .tm-color-swatch {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    border: 2px solid rgba(0,0,0,0.14);
+    border: 2px solid rgba(0,0,0,0.12);
     cursor: pointer;
     transition: transform var(--dur-fast) var(--ease-spring),
-                border-color var(--dur-fast) ease;
+                border-color var(--dur-fast) ease,
+                box-shadow var(--dur-fast) ease;
     flex-shrink: 0;
     padding: 0;
 }
 .tm-color-swatch:hover {
-    transform: scale(1.2);
-    border-color: rgba(0,0,0,0.35);
+    transform: scale(1.22);
+    border-color: rgba(0,0,0,0.30);
 }
 .tm-color-swatch.is-active {
     border-color: var(--primary, #2563eb);
-    transform: scale(1.2);
-    box-shadow: 0 0 0 2px var(--primary-dim, rgba(37,99,235,0.2));
+    transform: scale(1.22);
+    box-shadow: 0 0 0 2.5px var(--primary-dim, rgba(37,99,235,0.22));
 }
 
 .tm-color-input {
@@ -114,9 +135,9 @@ body {
 
 .tm-add-btn {
     height: 32px;
-    padding: 0 14px;
+    padding: 0 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 7px;
     background: var(--primary, #2563eb);
     color: #fff;
     font-size: var(--fs-sm, 11px);
@@ -125,6 +146,7 @@ body {
     flex-shrink: 0;
     transition: background var(--dur-fast) ease;
     font-family: var(--font-ui);
+    letter-spacing: 0.02em;
 }
 .tm-add-btn:hover { background: var(--primary-hover, #1d4ed8); }
 .tm-add-btn:disabled { opacity: 0.45; cursor: default; }
@@ -133,20 +155,20 @@ body {
 .tm-grid {
     flex: 1;
     overflow-y: auto;
-    padding: 4px 20px 20px;
+    padding: 12px 20px 20px;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     align-content: flex-start;
 }
 
-/* ── Tag card ────────────────────────────────────────────────── */
+/* ── Tag card ───────────────────────────────── */
 .tm-tag-card {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px 6px 6px;
-    border-radius: 12px;
+    padding: 7px 12px 7px 8px;
+    border-radius: 14px;
     background: #fff;
     border: 2px solid rgba(0,0,0,0.08);
     cursor: default;
@@ -316,12 +338,15 @@ body {
 </div>
 
 <div class="tm-toolbar">
-    <input class="tm-input" id="nameInput" type="text" placeholder="新标签名称…" maxlength="32" autocomplete="off">
-
-    <div class="tm-color-swatches" id="swatches"></div>
-    <input class="tm-color-input" id="colorInput" type="color" value="#2563eb">
-
-    <button class="tm-add-btn" id="addBtn">+ 创建</button>
+    <div class="tm-toolbar-row">
+        <input class="tm-input" id="nameInput" type="text" placeholder="新标签名称…" maxlength="32" autocomplete="off">
+        <button class="tm-add-btn" id="addBtn">+ 创建</button>
+    </div>
+    <div class="tm-toolbar-row">
+        <span class="tm-color-label">颜色</span>
+        <div class="tm-color-swatches" id="swatches"></div>
+        <input class="tm-color-input" id="colorInput" type="color" value="#2563eb">
+    </div>
 </div>
 
 <div class="tm-batch-bar" id="batchBar">

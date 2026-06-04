@@ -92,11 +92,16 @@ let _currentPage = null;
 
 // ── Default radial items (sticky-notes home view) ─────────────────────────────
 function homeRadialItems() {
-    return [
+    const items = [
         { id: 'new-note',   icon: 'icon-note',   label: '新建便笺', action: () => board.createNote(menu.openPos, 'note') },
         { id: 'new-todo',   icon: 'icon-todo',   label: 'Todo',     action: () => board.createNote(menu.openPos, 'todo') },
         { id: 'new-ticket', icon: 'icon-ticket', label: '工单',     action: () => board.createNote(menu.openPos, 'ticket') },
     ];
+    const archiveTool = _tools.find(t => t.id === 'archive-view');
+    const tagTool     = _tools.find(t => t.id === 'tag-manager');
+    if (archiveTool) items.push({ ...archiveTool, label: archiveTool.name, action: () => switchPage(archiveTool) });
+    if (tagTool)     items.push({ ...tagTool,     label: tagTool.name,     action: () => switchPage(tagTool) });
+    return items;
 }
 
 // ── Send postMessage to the current page iframe ───────────────────────────────
@@ -123,10 +128,7 @@ function switchPage(tool) {
         board.hide();
         pageFrame.style.display = '';
         pageFrame.src = `/tools/${tool.id}/`;
-        menu.setItems([
-            { id: '__tags',    icon: 'icon-tag',    label: 'Tags',    action: openTagsPanel },
-            { id: '__archive', icon: 'icon-archive', label: 'Archive', action: openArchivePanel },
-        ]);
+        menu.setItems([]);
         dock.setActive(tool.id);
     }
 
@@ -172,8 +174,8 @@ function openArchivePanel() {
         title:   'Archive',
         icon:    'icon-archive',
         content,
-        width:   320,
-        height:  340,
+        width:   480,
+        height:  520,
         x: 60, y: 80,
         onClose: () => { content.destroy?.(); syncHint(); },
     });
@@ -219,6 +221,9 @@ async function init() {
 
     // Store tools for Alt+middle-click page-switching radial menu
     _tools = tools;
+
+    // Refresh home radial items now that tools are known
+    menu.setItems(homeRadialItems());
 
     // Populate nav-dock with home + tools
     const homeItem = { id: '_home', _home: true, icon: 'icon-note', name: '便签本', label: '便签本' };

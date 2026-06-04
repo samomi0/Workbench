@@ -9,526 +9,934 @@
 <link rel="stylesheet" href="/assets/css/base.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
 
 body {
     background: var(--bg-canvas, #fefce8);
     color: var(--text, #1e2130);
     font-family: var(--font-ui, system-ui, sans-serif);
     font-size: var(--fs-base, 13px);
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
-/* ── Header ──────────────────────────────────────────────────────── */
+/* ── Header ───────────────────────────────────────────────── */
 .av-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--border, #e4e7ed);
-    padding: 10px 20px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    padding: 11px 20px 10px;
+    background: rgba(255,255,255,0.93);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border, #e4e7ed);
+    flex-shrink: 0;
+    z-index: 20;
 }
 
-.av-header h1 {
+.av-title {
     font-size: 15px;
     font-weight: 700;
-    color: var(--text, #1e2130);
+    color: var(--text);
     flex: 1;
+    letter-spacing: -0.01em;
 }
 
-.av-count {
-    font-size: 12px;
+.av-count-badge {
+    font-size: 11px;
     color: var(--muted, #8492a6);
-    background: rgba(0,0,0,0.06);
+    background: rgba(0,0,0,0.055);
     border-radius: 10px;
     padding: 2px 9px;
+    white-space: nowrap;
 }
 
-/* ── Grid ────────────────────────────────────────────────────────── */
+.av-icon-btn {
+    width: 28px; height: 28px;
+    border: 1px solid rgba(0,0,0,0.10);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.7);
+    color: var(--muted, #8492a6);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; line-height: 1;
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+    flex-shrink: 0; padding: 0;
+}
+.av-icon-btn:hover { background:#fff; color:var(--primary,#2563eb); }
+
+/* ── Toolbar ──────────────────────────────────────────────── */
+.av-toolbar {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 10px 20px 8px;
+    background: rgba(255,255,255,0.7);
+    border-bottom: 1px solid var(--border, #e4e7ed);
+    flex-shrink: 0;
+}
+
+.av-search {
+    width: 100%; height: 32px; padding: 0 12px;
+    border: 1px solid var(--border, #e4e7ed);
+    border-radius: 8px; background: #fff; color: var(--text);
+    font-size: 13px; font-family: var(--font-ui); outline: none;
+    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.av-search:focus { border-color:var(--primary,#2563eb); box-shadow:0 0 0 3px rgba(37,99,235,0.08); }
+.av-search::placeholder { color:var(--muted,#8492a6); }
+
+.av-type-tabs { display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
+
+.av-type-tab {
+    padding: 4px 12px;
+    border: 1px solid transparent; border-radius: 16px;
+    font-size: 12px; font-family: var(--font-ui);
+    background: rgba(0,0,0,0.04); color: var(--muted,#8492a6);
+    cursor: pointer;
+    transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+    white-space: nowrap;
+}
+.av-type-tab:hover { background:rgba(0,0,0,0.08); color:var(--text); }
+.av-type-tab.is-active { background:var(--primary,#2563eb); color:#fff; }
+
+.av-has-img-toggle {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:4px 12px; border-radius:16px;
+    border:1.5px dashed rgba(0,0,0,0.14); background:rgba(255,255,255,0.75);
+    font-size:12px; font-family:var(--font-ui); color:var(--muted,#8492a6);
+    cursor:pointer; white-space:nowrap; flex-shrink:0;
+    transition:border-color var(--dur-fast) ease,color var(--dur-fast) ease,background var(--dur-fast) ease;
+}
+.av-has-img-toggle:hover { border-color:rgba(0,0,0,0.25); color:var(--text); }
+.av-has-img-toggle.is-active {
+    border-style:solid; border-color:var(--primary,#2563eb);
+    background:rgba(37,99,235,0.06); color:var(--primary,#2563eb);
+    box-shadow:0 0 0 2.5px var(--primary-dim,rgba(37,99,235,0.15));
+}
+.av-has-img-toggle.is-disabled { opacity:0.32; pointer-events:none; }
+
+.av-tag-row {
+    display:flex; gap:5px; overflow-x:auto; scrollbar-width:none;
+    padding-bottom:2px; min-height:0;
+}
+.av-tag-row:empty { display:none; }
+.av-tag-row::-webkit-scrollbar { display:none; }
+
+.av-tag-pill {
+    display:inline-flex; align-items:center; gap:5px;
+    padding: 3px 10px 3px 7px; border-radius:12px;
+    border: 1.5px solid rgba(0,0,0,0.09); background:rgba(255,255,255,0.8);
+    font-size:11px; font-family:var(--font-ui); color:var(--text);
+    cursor:pointer; white-space:nowrap; flex-shrink:0;
+    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.av-tag-pill:hover { border-color:rgba(0,0,0,0.20); background:#fff; }
+.av-tag-pill.is-active { box-shadow:0 0 0 2px rgba(0,0,0,0.20); border-color:transparent; }
+
+.av-tag-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ── Batch Bar ────────────────────────────────────────────── */
+.av-batch-bar {
+    display:flex; align-items:center; gap:8px;
+    padding: 0 20px;
+    background: rgba(249,250,251,0.96);
+    border-bottom: 1px solid var(--border,#e4e7ed);
+    flex-shrink:0; overflow:hidden;
+    max-height:0;
+    transition: max-height 0.22s ease, padding 0.22s ease;
+}
+.av-batch-bar.is-visible { max-height:46px; padding-top:7px; padding-bottom:7px; }
+
+.av-check-all-wrap {
+    display:flex; align-items:center; gap:5px;
+    font-size:12px; color:var(--text); cursor:pointer; user-select:none; flex-shrink:0;
+}
+.av-check-all-wrap input { width:14px;height:14px;cursor:pointer;accent-color:var(--primary);margin:0; }
+
+.av-batch-label { font-size:12px; color:var(--muted,#8492a6); flex:1; }
+
+.av-batch-actions { display:flex; gap:6px; }
+
+.av-batch-btn {
+    height:27px; padding:0 12px; border-radius:5px;
+    font-size:12px; font-family:var(--font-ui); font-weight:500;
+    cursor:pointer; border:1px solid transparent; white-space:nowrap;
+    transition: background var(--dur-fast) ease;
+}
+.av-batch-btn:disabled { opacity:0.4; cursor:default; }
+
+.av-zip-btn { background:rgba(37,99,235,0.08); color:var(--primary,#2563eb); border-color:rgba(37,99,235,0.20); }
+.av-zip-btn:hover:not(:disabled) { background:rgba(37,99,235,0.15); }
+
+.av-restore-btn { background:rgba(34,197,94,0.08); color:#16a34a; border-color:rgba(34,197,94,0.22); }
+.av-restore-btn:hover:not(:disabled) { background:rgba(34,197,94,0.16); }
+
+.av-del-btn { background:rgba(239,68,68,0.07); color:#dc2626; border-color:rgba(239,68,68,0.20); }
+.av-del-btn:hover:not(:disabled) { background:rgba(239,68,68,0.15); }
+
+/* ── Main scroll area ─────────────────────────────────────── */
+.av-main { flex:1; overflow-y:auto; padding:16px 20px 24px; }
+
+/* ── Empty / Loading ──────────────────────────────────────── */
+.av-state {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; color:var(--muted,#8492a6); min-height:280px;
+}
+.av-state-icon { font-size:36px; opacity:0.28; }
+.av-state-text { font-size:14px; }
+
+.av-spinner {
+    width:22px; height:22px;
+    border:2.5px solid rgba(0,0,0,0.10);
+    border-top-color:var(--primary,#2563eb);
+    border-radius:50%; animation:av-spin 0.7s linear infinite;
+}
+@keyframes av-spin { to { transform:rotate(360deg); } }
+
+/* ── Card grid ────────────────────────────────────────────── */
 .av-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 14px;
-    padding: 20px;
-    align-content: start;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:12px; align-content:start;
 }
 
-/* ── Empty state ─────────────────────────────────────────────────── */
-.av-empty {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: var(--muted, #8492a6);
-    padding: 60px 20px;
-}
-
-.av-empty-icon {
-    font-size: 40px;
-    opacity: 0.3;
-}
-
-.av-empty-text {
-    font-size: 14px;
-}
-
-/* ── Card ────────────────────────────────────────────────────────── */
+/* ── Card ─────────────────────────────────────────────────── */
 .av-card {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    background:#fff; border-radius:9px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.07),0 2px 10px rgba(0,0,0,0.04);
+    overflow:hidden; display:flex; flex-direction:row;
     transition: box-shadow 0.15s ease;
-    animation: av-pop 0.18s ease;
+    animation: av-card-in 0.16s ease;
+    position:relative;
+}
+@keyframes av-card-in { from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;} }
+.av-card:hover { box-shadow:0 3px 12px rgba(0,0,0,0.10),0 1px 4px rgba(0,0,0,0.06); }
+.av-card.is-selected { box-shadow:0 0 0 2px var(--primary,#2563eb),0 3px 12px rgba(37,99,235,0.12); }
+
+.av-card-accent { width:4px; flex-shrink:0; }
+
+.av-card-body {
+    flex:1; display:flex; flex-direction:column; min-width:0;
+    padding:10px 12px 8px 10px; gap:6px;
 }
 
-.av-card:hover {
-    box-shadow: 0 4px 18px rgba(0,0,0,0.13);
-}
+.av-card-top { display:flex; align-items:flex-start; gap:6px; min-height:22px; }
 
-@keyframes av-pop {
-    from { opacity: 0; transform: scale(0.95); }
-    to   { opacity: 1; transform: scale(1); }
+.av-card-cb {
+    width:14px; height:14px; margin-top:1px;
+    accent-color:var(--primary,#2563eb); cursor:pointer; flex-shrink:0;
+    opacity:0; transition:opacity var(--dur-fast) ease;
 }
+.av-card:hover .av-card-cb,
+.av-card.is-selected .av-card-cb,
+.any-selected .av-card-cb { opacity:1; }
 
-/* Color accent bar on left */
-.av-card-inner {
-    display: flex;
-    flex-direction: row;
-    flex: 1;
-}
-
-.av-color-bar {
-    width: 5px;
-    flex-shrink: 0;
-    border-radius: 0;
-}
-
-.av-card-content {
-    flex: 1;
-    padding: 10px 12px 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    min-width: 0;
-}
-
-/* ── Type badge ──────────────────────────────────────────────────── */
 .av-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 1px 7px;
-    border-radius: 8px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    align-self: flex-start;
+    display:inline-flex; align-items:center;
+    padding:1px 7px; border-radius:7px;
+    font-size:10px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase;
+    white-space:nowrap; flex-shrink:0;
 }
+.av-badge-note   { background:rgba(254,240,138,0.55); color:#92400e; }
+.av-badge-todo   { background:rgba(187,247,208,0.55); color:#166534; }
+.av-badge-ticket { background:rgba(186,230,253,0.55); color:#0369a1; }
+.av-badge-image  { background:rgba(233,213,255,0.55); color:#6b21a8; }
 
-.av-badge-note   { background: rgba(254,240,138,0.5); color: #92400e; }
-.av-badge-todo   { background: rgba(187,247,208,0.5); color: #166534; }
-.av-badge-ticket { background: rgba(186,230,253,0.5); color: #0369a1; }
-.av-badge-image  { background: rgba(233,213,255,0.5); color: #6b21a8; }
+.av-card-tags { display:flex;flex-wrap:wrap;gap:3px;flex:1;justify-content:flex-end;align-items:flex-start; }
+.av-card-tag { display:inline-flex;align-items:center;padding:1px 6px;border-radius:8px;font-size:10px;color:#fff;opacity:0.85;white-space:nowrap; }
 
-/* ── Preview content ─────────────────────────────────────────────── */
+.av-preview-wrap { flex:1; min-height:40px; cursor:pointer; }
+.av-preview-wrap:hover .av-preview { color:var(--primary,#2563eb); }
+
 .av-preview {
-    font-size: 12px;
-    color: var(--text, #1e2130);
-    line-height: 1.5;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    word-break: break-all;
-    flex: 1;
+    font-size:12px; color:var(--text,#1e2130); line-height:1.55;
+    overflow:hidden; display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical;
+    word-break:break-all; transition:color var(--dur-fast) ease;
 }
+.av-preview.is-empty { color:var(--muted,#8492a6); font-style:italic; -webkit-line-clamp:2; }
 
-.av-preview-empty {
-    color: var(--muted, #8492a6);
-    font-style: italic;
-}
-
-/* Todo items */
-.av-todo-item {
-    display: flex;
-    align-items: baseline;
-    gap: 5px;
-    font-size: 12px;
-}
-
-.av-todo-item.done {
-    text-decoration: line-through;
-    color: var(--muted, #8492a6);
-}
-
-.av-todo-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-    flex-shrink: 0;
-    display: inline-block;
-    margin-top: 3px;
-}
-
-/* Ticket links */
-.av-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 2px;
-}
+.av-todo-row { display:flex;align-items:baseline;gap:5px;font-size:12px; }
+.av-todo-row.is-done { text-decoration:line-through; color:var(--muted,#8492a6); }
+.av-todo-dot { width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;margin-top:3px; }
 
 .av-link-pill {
-    display: inline-block;
-    padding: 1px 7px;
-    border-radius: 10px;
-    border: 1px solid rgba(37,99,235,0.30);
-    background: rgba(219,234,254,0.45);
-    color: #1d4ed8;
-    font-size: 11px;
-    text-decoration: none;
-    white-space: nowrap;
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display:inline-block; padding:1px 7px; border-radius:9px;
+    border:1px solid rgba(37,99,235,0.25); background:rgba(219,234,254,0.40);
+    color:#1d4ed8; font-size:11px; text-decoration:none;
+    white-space:nowrap; max-width:170px; overflow:hidden; text-overflow:ellipsis;
 }
 
-/* Image thumbnail */
 .av-thumb {
-    width: 100%;
-    max-height: 140px;
-    object-fit: cover;
-    display: block;
-    border-radius: 3px;
-    margin-top: 2px;
+    width:100%; max-height:150px; object-fit:cover; display:block;
+    border-radius:5px; cursor:zoom-in; transition:filter 0.15s ease;
 }
+.av-thumb:hover { filter:brightness(0.93); }
 
-/* ── Card footer (actions) ───────────────────────────────────────── */
 .av-card-footer {
-    display: flex;
-    gap: 6px;
-    padding: 7px 12px;
-    border-top: 1px solid rgba(0,0,0,0.06);
-    background: rgba(0,0,0,0.015);
+    display:flex; gap:5px; padding-top:4px;
+    border-top:1px solid rgba(0,0,0,0.05); margin-top:2px;
 }
 
 .av-btn {
-    flex: 1;
-    padding: 4px 0;
-    border: 1px solid transparent;
-    border-radius: 5px;
-    font-family: var(--font-ui, system-ui);
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
-    outline: none;
-    text-align: center;
+    flex:1; padding:4px 0; border:1px solid transparent; border-radius:5px;
+    font-family:var(--font-ui); font-size:11px; cursor:pointer;
+    transition:background 0.12s ease; outline:none; text-align:center;
 }
+.av-btn-restore { background:rgba(34,197,94,0.08);color:#16a34a;border-color:rgba(34,197,94,0.20); }
+.av-btn-restore:hover { background:rgba(34,197,94,0.18); }
+.av-btn-delete { background:rgba(239,68,68,0.07);color:#dc2626;border-color:rgba(239,68,68,0.18); }
+.av-btn-delete:hover { background:rgba(239,68,68,0.16); }
 
-.av-btn-restore {
-    background: rgba(34,197,94,0.10);
-    color: #16a34a;
-    border-color: rgba(34,197,94,0.25);
+/* ── Lightbox ─────────────────────────────────────────────── */
+.av-lightbox { display:none;position:fixed;inset:0;z-index:1100;align-items:center;justify-content:center; }
+.av-lightbox.is-open { display:flex; }
+.av-lb-bg { position:absolute;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(4px);cursor:zoom-out; }
+.av-lb-img {
+    position:relative; max-width:92vw; max-height:88vh; border-radius:6px;
+    box-shadow:0 12px 48px rgba(0,0,0,0.5); object-fit:contain;
+    animation:av-lb-in 0.18s ease;
 }
-.av-btn-restore:hover {
-    background: rgba(34,197,94,0.22);
-    border-color: rgba(34,197,94,0.5);
+@keyframes av-lb-in { from{opacity:0;transform:scale(0.94);}to{opacity:1;transform:none;} }
+.av-lb-close {
+    position:absolute;top:16px;right:20px;width:36px;height:36px;border-radius:50%;
+    background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.25);
+    color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1;
+    transition:background 0.12s ease;
 }
+.av-lb-close:hover { background:rgba(255,255,255,0.25); }
 
-.av-btn-delete {
-    background: rgba(239,68,68,0.08);
-    color: #dc2626;
-    border-color: rgba(239,68,68,0.20);
+.av-lb-copy-btn {
+    position:absolute;top:60px;right:20px;
+    height:32px;padding:0 14px;border-radius:6px;
+    background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.22);
+    color:#fff;font-size:12px;font-family:var(--font-ui);cursor:pointer;z-index:1;
+    display:flex;align-items:center;gap:5px;
+    transition:background 0.12s ease;
 }
-.av-btn-delete:hover {
-    background: rgba(239,68,68,0.18);
-    border-color: rgba(239,68,68,0.45);
-}
+.av-lb-copy-btn:hover { background:rgba(255,255,255,0.22); }
+.av-lb-copy-btn.is-copied { background:rgba(34,197,94,0.40);border-color:rgba(34,197,94,0.55); }
 
-/* ── Loading spinner ─────────────────────────────────────────────── */
-.av-loading {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: var(--muted, #8492a6);
-    padding: 60px;
+/* ── Detail Viewer Modal ──────────────────────────────────── */
+.av-modal { display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;padding:20px; }
+.av-modal.is-open { display:flex; }
+.av-modal-bg { position:absolute;inset:0;background:rgba(0,0,0,0.40);backdrop-filter:blur(3px);cursor:pointer; }
+.av-modal-box {
+    position:relative; background:#fff; border-radius:12px;
+    box-shadow:0 16px 48px rgba(0,0,0,0.22);
+    width:100%; max-width:560px; max-height:78vh;
+    display:flex; flex-direction:column; overflow:hidden;
+    animation:av-modal-in 0.18s ease;
 }
-
-.av-spinner {
-    width: 20px;
-    height: 20px;
-    border: 2.5px solid rgba(0,0,0,0.10);
-    border-top-color: var(--primary, #2563eb);
-    border-radius: 50%;
-    animation: av-spin 0.7s linear infinite;
+@keyframes av-modal-in { from{opacity:0;transform:scale(0.96) translateY(6px);}to{opacity:1;transform:none;} }
+.av-modal-head {
+    display:flex;align-items:center;gap:8px;
+    padding:14px 16px 12px; border-bottom:1px solid var(--border,#e4e7ed); flex-shrink:0;
 }
-
-@keyframes av-spin {
-    to { transform: rotate(360deg); }
+.av-modal-accent { width:12px;height:12px;border-radius:50%;flex-shrink:0; }
+.av-modal-close {
+    width:26px;height:26px;margin-left:auto;border-radius:50%;
+    border:1px solid rgba(0,0,0,0.10);background:rgba(0,0,0,0.04);
+    color:var(--muted,#8492a6);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background var(--dur-fast) ease,color var(--dur-fast) ease; flex-shrink:0;
 }
+.av-modal-close:hover { background:rgba(239,68,68,0.10);color:#dc2626; }
+.av-modal-body {
+    flex:1;overflow-y:auto;padding:16px;font-size:13px;line-height:1.7;
+    color:var(--text);word-break:break-all;
+}
+.av-modal-todo-item { display:flex;align-items:baseline;gap:8px;padding:3px 0;font-size:13px; }
+.av-modal-todo-item.is-done { color:var(--muted,#8492a6);text-decoration:line-through; }
+.av-modal-todo-cb { width:14px;height:14px;flex-shrink:0;accent-color:var(--primary);pointer-events:none;margin:0; }
+.av-modal-ticket-content { margin-bottom:12px;white-space:pre-wrap; }
+.av-modal-links-head { font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px; }
+.av-modal-links { display:flex;flex-direction:column;gap:5px; }
+.av-modal-link-row a { color:var(--primary,#2563eb);text-decoration:none;font-size:12px;word-break:break-all; }
+.av-modal-link-row a:hover { text-decoration:underline; }
+.av-modal-link-label { font-size:12px;color:var(--muted,#8492a6);margin-right:4px; }
 </style>
 </head>
 <body>
 
+<!-- Header -->
 <header class="av-header">
-    <h1>归档便签</h1>
-    <span class="av-count" id="av-count" style="display:none"></span>
+    <h1 class="av-title">归档便签</h1>
+    <span class="av-count-badge" id="avCount" style="display:none"></span>
+    <button class="av-icon-btn" id="avRefresh" title="刷新">↺</button>
 </header>
 
-<div id="av-body" class="av-loading">
-    <div class="av-spinner"></div>
-    <span>加载中…</span>
+<!-- Filter Toolbar -->
+<div class="av-toolbar">
+    <input class="av-search" id="avSearch" type="text" placeholder="搜索内容、链接…" autocomplete="off">
+    <div class="av-type-tabs" id="avTypeTabs">
+        <button class="av-type-tab is-active" data-type="">全部</button>
+        <button class="av-type-tab" data-type="note">便签</button>
+        <button class="av-type-tab" data-type="todo">Todo</button>
+        <button class="av-type-tab" data-type="ticket">工单</button>
+        <button class="av-has-img-toggle" id="avHasImgToggle">🖼 含图片</button>
+    </div>
+    <div class="av-tag-row" id="avTagRow"></div>
+</div>
+
+<!-- Batch action bar -->
+<div class="av-batch-bar" id="avBatchBar">
+    <label class="av-check-all-wrap">
+        <input type="checkbox" id="avCheckAll">
+        <span>全选</span>
+    </label>
+    <span class="av-batch-label" id="avBatchLabel">已选 0 条</span>
+    <div class="av-batch-actions">
+        <button class="av-batch-btn av-zip-btn" id="avZipBtn">⬇ ZIP</button>
+        <button class="av-batch-btn av-restore-btn" id="avBatchRestore">恢复</button>
+        <button class="av-batch-btn av-del-btn" id="avBatchDelete">删除</button>
+    </div>
+</div>
+
+<!-- Main content -->
+<main class="av-main" id="avMain">
+    <div class="av-state">
+        <div class="av-spinner"></div>
+        <span class="av-state-text">加载中…</span>
+    </div>
+</main>
+
+<!-- Lightbox -->
+<div class="av-lightbox" id="avLightbox">
+    <div class="av-lb-bg" id="avLbBg"></div>
+    <button class="av-lb-close" id="avLbClose">×</button>
+    <button class="av-lb-copy-btn" id="avLbCopyBtn">复制</button>
+    <img class="av-lb-img" id="avLbImg" alt="">
+</div>
+
+<!-- Detail Viewer Modal -->
+<div class="av-modal" id="avModal">
+    <div class="av-modal-bg" id="avModalBg"></div>
+    <div class="av-modal-box">
+        <div class="av-modal-head" id="avModalHead">
+            <div class="av-modal-accent" id="avModalAccent"></div>
+            <span class="av-badge" id="avModalBadge"></span>
+            <button class="av-modal-close" id="avModalClose">×</button>
+        </div>
+        <div class="av-modal-body" id="avModalBody"></div>
+    </div>
 </div>
 
 <script>
-const BADGE_LABELS = { note: '便签', todo: 'Todo', ticket: '工单', image: '图片' };
-const BADGE_CLASS  = { note: 'av-badge-note', todo: 'av-badge-todo', ticket: 'av-badge-ticket', image: 'av-badge-image' };
+'use strict';
 
-const countEl = document.getElementById('av-count');
-const bodyEl  = document.getElementById('av-body');
+const BADGE_LABEL = { note: '便签', todo: 'Todo', ticket: '工单', image: '图片' };
+const BADGE_CLASS = { note:'av-badge-note', todo:'av-badge-todo', ticket:'av-badge-ticket', image:'av-badge-image' };
 
-let notes = [];
+let allNotes = [], allTags = [], tagMap = {};
+let filterType = '', filterTagId = '', filterSearch = '', filterHasImage = false;
+let selectedIds = new Set();
+
+const avCount        = document.getElementById('avCount');
+const avMain         = document.getElementById('avMain');
+const avSearch       = document.getElementById('avSearch');
+const avTypeTabs     = document.getElementById('avTypeTabs');
+const avHasImgToggle = document.getElementById('avHasImgToggle');
+const avTagRow       = document.getElementById('avTagRow');
+const avBatchBar     = document.getElementById('avBatchBar');
+const avBatchLabel   = document.getElementById('avBatchLabel');
+const avCheckAll     = document.getElementById('avCheckAll');
+const avZipBtn       = document.getElementById('avZipBtn');
+const avBatchRestore = document.getElementById('avBatchRestore');
+const avBatchDelete  = document.getElementById('avBatchDelete');
+const avLightbox     = document.getElementById('avLightbox');
+const avLbImg        = document.getElementById('avLbImg');
+const avLbCopyBtn    = document.getElementById('avLbCopyBtn');
+const avModal        = document.getElementById('avModal');
+const avModalAccent  = document.getElementById('avModalAccent');
+const avModalBadge   = document.getElementById('avModalBadge');
+const avModalBody    = document.getElementById('avModalBody');
 
 async function load() {
+    avMain.innerHTML = '<div class="av-state"><div class="av-spinner"></div><span class="av-state-text">加载中…</span></div>';
     try {
-        const res = await fetch('/api/notes?archived=true');
-        if (!res.ok) throw new Error(res.statusText);
-        notes = await res.json();
+        const [notesRes, tagsRes] = await Promise.all([
+            fetch('/api/notes?archived=true'),
+            fetch('/api/tags'),
+        ]);
+        if (!notesRes.ok) throw new Error('notes: ' + notesRes.statusText);
+        if (!tagsRes.ok)  throw new Error('tags: '  + tagsRes.statusText);
+        allNotes = await notesRes.json();
+        allTags  = await tagsRes.json();
+        tagMap   = Object.fromEntries(allTags.map(t => [t.id, t]));
     } catch (err) {
-        bodyEl.innerHTML = `<div class="av-empty"><div class="av-empty-icon">⚠️</div><div class="av-empty-text">加载失败：${err.message}</div></div>`;
+        avMain.innerHTML = `<div class="av-state"><div class="av-state-icon">⚠️</div><div class="av-state-text">加载失败：${err.message}</div></div>`;
         return;
     }
+    buildTagRow();
     render();
 }
 
+function buildTagRow() {
+    avTagRow.innerHTML = '';
+    allTags.forEach(tag => {
+        const pill = document.createElement('button');
+        const isActive = filterTagId === tag.id;
+        pill.className = 'av-tag-pill' + (isActive ? ' is-active' : '');
+        if (isActive) {
+            pill.style.boxShadow = `0 0 0 2px ${tag.color}66`;
+            pill.style.borderColor = 'transparent';
+        }
+        const dot = document.createElement('span');
+        dot.className = 'av-tag-dot';
+        dot.style.background = tag.color || '#8492a6';
+        pill.append(dot, document.createTextNode(tag.name));
+        pill.addEventListener('click', () => {
+            filterTagId = filterTagId === tag.id ? '' : tag.id;
+            buildTagRow(); render();
+        });
+        avTagRow.appendChild(pill);
+    });
+}
+
+function noteHasImages(note) {
+    if (note.type === 'image') return true;
+    if (note.type === 'note') {
+        const imgs = note.images;
+        return Array.isArray(imgs) && imgs.length > 0;
+    }
+    return false;
+}
+
+function getFiltered() {
+    const q = filterSearch.toLowerCase().trim();
+    return allNotes.filter(note => {
+        if (filterType && note.type !== filterType) return false;
+        if (filterHasImage && !noteHasImages(note)) return false;
+        if (filterTagId && !(note.tag_ids || []).includes(filterTagId)) return false;
+        if (q) {
+            let text = '';
+            if (note.type === 'note' || note.type === 'image') text = note.text || '';
+            if (note.type === 'todo')   text = (note.items || []).map(i => i.text || '').join(' ');
+            if (note.type === 'ticket') text = (note.content || '') + ' ' + (note.links || []).map(l => (l.label||'') + ' ' + (l.url||'')).join(' ');
+            if (!text.toLowerCase().includes(q)) return false;
+        }
+        return true;
+    });
+}
+
 function render() {
-    if (notes.length === 0) {
-        countEl.style.display = 'none';
-        bodyEl.className = '';
-        bodyEl.innerHTML = `
-            <div class="av-empty">
-                <div class="av-empty-icon">🗄️</div>
-                <div class="av-empty-text">暂无归档内容</div>
-            </div>`;
+    const filtered = getFiltered();
+    updateCount(filtered.length);
+    syncCheckAll();
+    if (!filtered.length) {
+        avMain.innerHTML = `<div class="av-state"><div class="av-state-icon">${!allNotes.length ? '🗄️' : '🔍'}</div><div class="av-state-text">${!allNotes.length ? '暂无归档便签' : '没有匹配的结果'}</div></div>`;
         return;
     }
-
-    countEl.textContent = notes.length + ' 条';
-    countEl.style.display = '';
-    bodyEl.className = 'av-grid';
-    bodyEl.innerHTML = '';
-
-    notes.forEach(note => bodyEl.appendChild(makeCard(note)));
+    const grid = document.createElement('div');
+    grid.className = 'av-grid' + (selectedIds.size > 0 ? ' any-selected' : '');
+    filtered.forEach(note => grid.appendChild(makeCard(note)));
+    avMain.innerHTML = '';
+    avMain.appendChild(grid);
 }
 
 function makeCard(note) {
     const card = document.createElement('div');
-    card.className = 'av-card';
+    card.className = 'av-card' + (selectedIds.has(note.id) ? ' is-selected' : '');
     card.dataset.id = note.id;
 
-    // Inner wrapper for color bar + content
-    const inner = document.createElement('div');
-    inner.className = 'av-card-inner';
+    const accent = document.createElement('div');
+    accent.className = 'av-card-accent';
+    accent.style.background = note.color || '#d4c9b5';
+    card.appendChild(accent);
 
-    // Color bar
-    const bar = document.createElement('div');
-    bar.className  = 'av-color-bar';
-    bar.style.background = note.color || '#d4c9b5';
-    inner.appendChild(bar);
+    const body = document.createElement('div');
+    body.className = 'av-card-body';
 
-    // Content area
-    const content = document.createElement('div');
-    content.className = 'av-card-content';
+    const top = document.createElement('div');
+    top.className = 'av-card-top';
 
-    // Badge
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'av-card-cb'; cb.checked = selectedIds.has(note.id);
+    cb.addEventListener('click', e => { e.stopPropagation(); toggleSelect(note.id); });
+    top.appendChild(cb);
+
     const badge = document.createElement('span');
-    badge.className = 'av-badge ' + (BADGE_CLASS[note.type] || 'av-badge-note');
-    badge.textContent = BADGE_LABELS[note.type] || '便签';
-    content.appendChild(badge);
+    const displayType = note.type === 'image' ? 'note' : note.type;
+    badge.className = 'av-badge ' + (noteHasImages(note) ? 'av-badge-image' : (BADGE_CLASS[displayType] || 'av-badge-note'));
+    badge.textContent = noteHasImages(note) ? '便签🖼' : (BADGE_LABEL[displayType] || '便签');
+    top.appendChild(badge);
 
-    // Preview by type
-    content.appendChild(makePreview(note));
-    inner.appendChild(content);
-    card.appendChild(inner);
+    const tagPills = document.createElement('div');
+    tagPills.className = 'av-card-tags';
+    (note.tag_ids || []).forEach(tid => {
+        const tag = tagMap[tid]; if (!tag) return;
+        const p = document.createElement('span');
+        p.className = 'av-card-tag'; p.textContent = tag.name; p.style.background = tag.color || '#8492a6';
+        tagPills.appendChild(p);
+    });
+    top.appendChild(tagPills);
+    body.appendChild(top);
 
-    // Footer actions
+    const previewWrap = document.createElement('div');
+    previewWrap.className = 'av-preview-wrap';
+    if (note.type !== 'image' || (note.type === 'image' && note.text)) {
+        previewWrap.title = '点击查看全文';
+        previewWrap.addEventListener('click', () => openViewer(note));
+    }
+    previewWrap.appendChild(makePreview(note));
+    body.appendChild(previewWrap);
+
     const footer = document.createElement('div');
     footer.className = 'av-card-footer';
-
     const restoreBtn = document.createElement('button');
-    restoreBtn.className   = 'av-btn av-btn-restore';
-    restoreBtn.textContent = '恢复';
+    restoreBtn.className = 'av-btn av-btn-restore'; restoreBtn.textContent = '恢复';
     restoreBtn.addEventListener('click', () => restoreNote(note.id, card));
-
     const deleteBtn = document.createElement('button');
-    deleteBtn.className   = 'av-btn av-btn-delete';
-    deleteBtn.textContent = '永久删除';
+    deleteBtn.className = 'av-btn av-btn-delete'; deleteBtn.textContent = '永久删除';
     deleteBtn.addEventListener('click', () => deleteNote(note.id, card));
-
     footer.append(restoreBtn, deleteBtn);
-    card.appendChild(footer);
+    body.appendChild(footer);
+    card.appendChild(body);
 
+    card.addEventListener('click', e => {
+        if (e.target === cb || e.target.closest('.av-btn') || e.target.closest('.av-preview-wrap')) return;
+        toggleSelect(note.id);
+    });
     return card;
 }
 
 function makePreview(note) {
     const el = document.createElement('div');
     el.className = 'av-preview';
-
     switch (note.type) {
         case 'todo': {
             const items = Array.isArray(note.items) ? note.items : [];
-            if (items.length === 0) {
-                el.innerHTML = '<span class="av-preview-empty">无待办项目</span>';
-            } else {
-                items.slice(0, 5).forEach(item => {
-                    const row = document.createElement('div');
-                    row.className = 'av-todo-item' + (item.done ? ' done' : '');
-                    const dot = document.createElement('span');
-                    dot.className = 'av-todo-dot';
-                    const text = document.createTextNode(item.text || '');
-                    row.append(dot, text);
-                    el.appendChild(row);
-                });
-                if (items.length > 5) {
-                    const more = document.createElement('div');
-                    more.style.color = 'var(--muted)';
-                    more.style.fontSize = '11px';
-                    more.textContent = `…还有 ${items.length - 5} 项`;
-                    el.appendChild(more);
-                }
+            if (!items.length) { el.textContent = '空 Todo'; el.classList.add('is-empty'); break; }
+            items.slice(0, 6).forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'av-todo-row' + (item.done ? ' is-done' : '');
+                const dot = document.createElement('span'); dot.className = 'av-todo-dot';
+                row.append(dot, document.createTextNode(item.text || ''));
+                el.appendChild(row);
+            });
+            if (items.length > 6) {
+                const more = document.createElement('div');
+                more.style.cssText = 'color:var(--muted);font-size:11px;margin-top:2px;';
+                more.textContent = `…还有 ${items.length - 6} 项`; el.appendChild(more);
             }
             break;
         }
         case 'ticket': {
-            if (note.content) {
-                const p = document.createElement('div');
-                p.textContent = note.content;
-                el.appendChild(p);
-            }
+            if (note.content) { const p = document.createElement('div'); p.textContent = note.content; el.appendChild(p); }
             const links = Array.isArray(note.links) ? note.links : [];
-            if (links.length > 0) {
-                const linkArea = document.createElement('div');
-                linkArea.className = 'av-links';
-                links.slice(0, 4).forEach(lk => {
+            if (links.length) {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;';
+                links.slice(0, 3).forEach(lk => {
                     const a = document.createElement('a');
-                    a.className = 'av-link-pill';
-                    a.href      = lk.url;
-                    a.target    = '_blank';
-                    a.rel       = 'noopener noreferrer';
-                    a.textContent = lk.label || lk.url;
-                    linkArea.appendChild(a);
+                    a.className = 'av-link-pill'; a.href = lk.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+                    a.textContent = lk.label || lk.url; row.appendChild(a);
                 });
-                el.appendChild(linkArea);
+                el.appendChild(row);
             }
-            if (!note.content && links.length === 0) {
-                el.innerHTML = '<span class="av-preview-empty">空工单</span>';
-            }
+            if (!note.content && !links.length) { el.textContent = '空工单'; el.classList.add('is-empty'); }
             break;
         }
         case 'image': {
             const img = document.createElement('img');
-            img.className = 'av-thumb';
-            img.src       = `/api/notes/${note.id}/image`;
-            img.alt       = '';
-            img.loading   = 'lazy';
-            el.appendChild(img);
+            img.className = 'av-thumb'; img.src = `/api/notes/${note.id}/image`; img.alt = ''; img.loading = 'lazy';
+            img.addEventListener('click', (e) => { e.stopPropagation(); openLightbox(`/api/notes/${note.id}/image`); });
+            el.classList.remove('av-preview'); el.appendChild(img);
+            if (note.text) {
+                const cap = document.createElement('div');
+                cap.style.cssText = 'font-size:12px;color:var(--text);margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;';
+                cap.textContent = note.text; el.appendChild(cap);
+            }
             break;
         }
         default: {
-            if (note.text) {
+            const imgs = Array.isArray(note.images) ? note.images : [];
+            if (imgs.length > 0) {
+                el.classList.remove('av-preview'); el.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+                const thumb = document.createElement('img');
+                thumb.className = 'av-thumb'; thumb.src = `/api/notes/${note.id}/images/${imgs[0].img_id}`; thumb.alt = ''; thumb.loading = 'lazy';
+                thumb.addEventListener('click', (e) => { e.stopPropagation(); openLightbox(`/api/notes/${note.id}/images/${imgs[0].img_id}`); });
+                el.appendChild(thumb);
+                if (note.text) {
+                    const txt = document.createElement('div');
+                    txt.style.cssText = 'font-size:12px;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;';
+                    txt.textContent = note.text; el.appendChild(txt);
+                }
+                if (imgs.length > 1) {
+                    const more = document.createElement('div');
+                    more.style.cssText = 'font-size:11px;color:var(--muted);';
+                    more.textContent = `📷 +${imgs.length - 1} 张`; el.appendChild(more);
+                }
+            } else if (note.text) {
                 el.textContent = note.text;
             } else {
-                el.innerHTML = '<span class="av-preview-empty">空便签</span>';
+                el.textContent = '空便签'; el.classList.add('is-empty');
             }
-            break;
         }
     }
     return el;
 }
 
+function toggleSelect(id) {
+    if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+    updateSelectionUI();
+}
+
+function updateSelectionUI() {
+    avMain.querySelectorAll('.av-card').forEach(card => {
+        const id = card.dataset.id;
+        card.classList.toggle('is-selected', selectedIds.has(id));
+        const cb = card.querySelector('.av-card-cb'); if (cb) cb.checked = selectedIds.has(id);
+    });
+    const grid = avMain.querySelector('.av-grid');
+    if (grid) grid.classList.toggle('any-selected', selectedIds.size > 0);
+    updateBatchBar(); syncCheckAll();
+}
+
+function syncCheckAll() {
+    const ids = getFiltered().map(n => n.id);
+    const all = ids.length > 0 && ids.every(id => selectedIds.has(id));
+    const some = ids.some(id => selectedIds.has(id));
+    avCheckAll.checked = all; avCheckAll.indeterminate = some && !all;
+}
+
+function updateBatchBar() {
+    const n = selectedIds.size;
+    avBatchBar.classList.toggle('is-visible', n > 0);
+    avBatchLabel.textContent = '已选 ' + n + ' 条';
+    avZipBtn.disabled = avBatchRestore.disabled = avBatchDelete.disabled = n === 0;
+}
+
+function updateCount(n) {
+    const total = allNotes.length;
+    if (!total) { avCount.style.display = 'none'; return; }
+    avCount.style.display = '';
+    avCount.textContent = n !== total ? `${n} / ${total} 条` : `${total} 条`;
+}
+
 async function restoreNote(id, cardEl) {
     try {
-        const res = await fetch(`/api/notes/${id}`, {
-            method:  'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ archived: false }),
-        });
-        if (!res.ok) throw new Error(res.statusText);
-        cardEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-        cardEl.style.opacity    = '0';
-        cardEl.style.transform  = 'scale(0.92)';
-        setTimeout(() => {
-            cardEl.remove();
-            notes = notes.filter(n => n.id !== id);
-            if (notes.length === 0) render();
-            else updateCount();
-        }, 220);
-    } catch (err) {
-        alert('恢复失败：' + err.message);
-    }
+        const r = await fetch(`/api/notes/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({archived:false}) });
+        if (!r.ok) throw new Error(r.statusText);
+        cardEl.style.transition = 'opacity 0.2s,transform 0.2s';
+        cardEl.style.opacity = '0'; cardEl.style.transform = 'scale(0.92)';
+        setTimeout(() => { allNotes = allNotes.filter(n => n.id !== id); selectedIds.delete(id); render(); updateBatchBar(); }, 200);
+    } catch (e) { alert('恢复失败：' + e.message); }
 }
 
 async function deleteNote(id, cardEl) {
-    if (!confirm('确定永久删除这条归档便签？此操作不可撤销。')) return;
+    if (!confirm('确定永久删除这条归档便签？')) return;
     try {
-        const res = await fetch(`/api/notes/${id}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error(res.statusText);
-        cardEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-        cardEl.style.opacity    = '0';
-        cardEl.style.transform  = 'scale(0.92)';
-        setTimeout(() => {
-            cardEl.remove();
-            notes = notes.filter(n => n.id !== id);
-            if (notes.length === 0) render();
-            else updateCount();
-        }, 220);
-    } catch (err) {
-        alert('删除失败：' + err.message);
-    }
+        const r = await fetch(`/api/notes/${id}`, { method:'DELETE' });
+        if (!r.ok) throw new Error(r.statusText);
+        cardEl.style.transition = 'opacity 0.2s,transform 0.2s';
+        cardEl.style.opacity = '0'; cardEl.style.transform = 'scale(0.92)';
+        setTimeout(() => { allNotes = allNotes.filter(n => n.id !== id); selectedIds.delete(id); render(); updateBatchBar(); }, 200);
+    } catch (e) { alert('删除失败：' + e.message); }
 }
 
-function updateCount() {
-    countEl.textContent = notes.length + ' 条';
+avBatchRestore.addEventListener('click', async () => {
+    const ids = [...selectedIds]; if (!ids.length) return;
+    if (!confirm(`确定恢复选中的 ${ids.length} 条便签？`)) return;
+    avBatchRestore.disabled = true;
+    for (const id of ids) {
+        try { await fetch(`/api/notes/${id}`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({archived:false})}); allNotes = allNotes.filter(n => n.id !== id); selectedIds.delete(id); } catch (_) {}
+    }
+    render(); updateBatchBar();
+});
+
+avBatchDelete.addEventListener('click', async () => {
+    const ids = [...selectedIds]; if (!ids.length) return;
+    if (!confirm(`确定永久删除选中的 ${ids.length} 条便签？此操作不可撤销。`)) return;
+    avBatchDelete.disabled = true;
+    for (const id of ids) {
+        try { await fetch(`/api/notes/${id}`, {method:'DELETE'}); allNotes = allNotes.filter(n => n.id !== id); selectedIds.delete(id); } catch (_) {}
+    }
+    render(); updateBatchBar();
+});
+
+avZipBtn.addEventListener('click', async () => {
+    const ids = [...selectedIds]; if (!ids.length) return;
+    const orig = avZipBtn.textContent; avZipBtn.disabled = true; avZipBtn.textContent = '打包中…';
+    try {
+        const r = await fetch('/api/archive/notes', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({note_ids:ids,filename:'archive-notes.zip'})});
+        if (!r.ok) throw new Error(r.statusText);
+        const blob = await r.blob(); const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'archive-notes.zip'; a.click(); URL.revokeObjectURL(url);
+    } catch (e) { alert('打包失败：' + e.message); }
+    avZipBtn.disabled = false; avZipBtn.textContent = orig;
+});
+
+avCheckAll.addEventListener('change', () => {
+    const ids = getFiltered().map(n => n.id);
+    if (avCheckAll.checked) ids.forEach(id => selectedIds.add(id));
+    else ids.forEach(id => selectedIds.delete(id));
+    updateSelectionUI();
+});
+
+function openLightbox(src) {
+    avLbImg.src = src;
+    avLbCopyBtn.classList.remove('is-copied');
+    avLbCopyBtn.textContent = '复制';
+    avLightbox.classList.add('is-open');
 }
+function closeLightbox() { avLightbox.classList.remove('is-open'); setTimeout(() => { avLbImg.src = ''; }, 200); }
+document.getElementById('avLbClose').addEventListener('click', closeLightbox);
+document.getElementById('avLbBg').addEventListener('click', closeLightbox);
+// Right-click anywhere on lightbox → close
+document.getElementById('avLightbox').addEventListener('contextmenu', e => { e.preventDefault(); closeLightbox(); });
+
+avLbCopyBtn.addEventListener('click', async () => {
+    const src = avLbImg.src;
+    if (!src) return;
+    try {
+        const res = await fetch(src);
+        if (!res.ok) throw new Error(res.statusText);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        avLbCopyBtn.classList.add('is-copied');
+        avLbCopyBtn.textContent = '已复制';
+        setTimeout(() => { avLbCopyBtn.classList.remove('is-copied'); avLbCopyBtn.textContent = '复制'; }, 1800);
+    } catch (e) {
+        alert('复制失败：' + e.message);
+    }
+});
+
+function openViewer(note) {
+    avModalAccent.style.background = note.color || '#d4c9b5';
+    const displayType = note.type === 'image' ? 'note' : note.type;
+    avModalBadge.className = 'av-badge ' + (noteHasImages(note) ? 'av-badge-image' : (BADGE_CLASS[displayType] || 'av-badge-note'));
+    avModalBadge.textContent = noteHasImages(note) ? '便签🖼' : (BADGE_LABEL[displayType] || '便签');
+    avModalBody.innerHTML = '';
+
+    // Show images for image-type notes or notes with inline images
+    const imgs = note.type === 'image'
+        ? [{ img_id: 'image', ext: note.image_ext || 'png' }]
+        : (Array.isArray(note.images) ? note.images : []);
+    if (imgs.length > 0) {
+        const gallery = document.createElement('div');
+        gallery.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;';
+        imgs.forEach(imgDef => {
+            const src = note.type === 'image'
+                ? `/api/notes/${note.id}/image`
+                : `/api/notes/${note.id}/images/${imgDef.img_id}`;
+            const img = document.createElement('img');
+            img.src = src; img.alt = '';
+            img.style.cssText = 'max-width:100%;max-height:360px;border-radius:6px;cursor:zoom-in;object-fit:contain;';
+            img.addEventListener('click', () => openLightbox(src));
+            gallery.appendChild(img);
+        });
+        avModalBody.appendChild(gallery);
+    }
+
+    switch (note.type) {
+        case 'note':
+        case 'image': {
+            if (note.text) {
+                const pre = document.createElement('div');
+                pre.style.cssText = 'white-space:pre-wrap;word-break:break-all;';
+                pre.textContent = note.text; avModalBody.appendChild(pre);
+            } else if (!imgs.length) {
+                avModalBody.appendChild(document.createTextNode('（空便签）'));
+            }
+            break;
+        }
+        case 'todo': {
+            const items = Array.isArray(note.items) ? note.items : [];
+            if (!items.length) { avModalBody.textContent = '（空 Todo）'; break; }
+            items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'av-modal-todo-item' + (item.done ? ' is-done' : '');
+                const cb = document.createElement('input'); cb.type='checkbox'; cb.className='av-modal-todo-cb'; cb.checked=!!item.done;
+                row.append(cb, document.createTextNode(item.text || '')); avModalBody.appendChild(row);
+            }); break;
+        }
+        case 'ticket': {
+            if (note.content) {
+                const p = document.createElement('div'); p.className = 'av-modal-ticket-content'; p.textContent = note.content; avModalBody.appendChild(p);
+            }
+            const links = Array.isArray(note.links) ? note.links : [];
+            if (links.length) {
+                const head = document.createElement('div'); head.className = 'av-modal-links-head'; head.textContent = '关联链接';
+                const list = document.createElement('div'); list.className = 'av-modal-links';
+                links.forEach(lk => {
+                    const row = document.createElement('div'); row.className = 'av-modal-link-row';
+                    if (lk.label) { const lbl = document.createElement('span'); lbl.className='av-modal-link-label'; lbl.textContent=lk.label+'：'; row.appendChild(lbl); }
+                    const a = document.createElement('a'); a.href=lk.url; a.target='_blank'; a.rel='noopener noreferrer'; a.textContent=lk.url; row.appendChild(a); list.appendChild(row);
+                });
+                avModalBody.append(head, list);
+            }
+            if (!note.content && !links.length) avModalBody.textContent = '（空工单）';
+            break;
+        }
+    }
+    avModal.classList.add('is-open');
+}
+function closeViewer() { avModal.classList.remove('is-open'); }
+document.getElementById('avModalClose').addEventListener('click', closeViewer);
+document.getElementById('avModalBg').addEventListener('click', closeViewer);
+// Right-click on modal → close
+document.getElementById('avModal').addEventListener('contextmenu', e => { e.preventDefault(); closeViewer(); });
+
+avTypeTabs.addEventListener('click', e => {
+    const tab = e.target.closest('.av-type-tab');
+    const imgTgl = e.target.closest('#avHasImgToggle');
+    if (tab) {
+        filterType = tab.dataset.type;
+        avTypeTabs.querySelectorAll('.av-type-tab').forEach(t => t.classList.toggle('is-active', t === tab));
+        updateHasImgToggleState();
+        render();
+    } else if (imgTgl && !imgTgl.classList.contains('is-disabled')) {
+        filterHasImage = !filterHasImage;
+        if (filterHasImage) {
+            if (!filterType || filterType === 'todo' || filterType === 'ticket') {
+                filterType = 'note';
+                avTypeTabs.querySelectorAll('.av-type-tab').forEach(t => t.classList.toggle('is-active', t.dataset.type === 'note'));
+            }
+        }
+        updateHasImgToggleState();
+        render();
+    }
+});
+
+function updateHasImgToggleState() {
+    const canFilter = !filterType || filterType === 'note';
+    avHasImgToggle.classList.toggle('is-active', filterHasImage);
+    avHasImgToggle.classList.toggle('is-disabled', !canFilter && !filterHasImage);
+}
+
+let searchTimer;
+avSearch.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { filterSearch = avSearch.value; render(); }, 160);
+});
+
+document.getElementById('avRefresh').addEventListener('click', () => {
+    selectedIds.clear(); filterType = ''; filterTagId = ''; filterSearch = ''; filterHasImage = false;
+    avSearch.value = '';
+    avTypeTabs.querySelectorAll('.av-type-tab').forEach((t, i) => t.classList.toggle('is-active', i === 0));
+    updateHasImgToggleState();
+    updateBatchBar(); load();
+});
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLightbox(); closeViewer(); } });
+
+document.addEventListener('mousedown', e => {
+    if (e.button !== 1) return; e.preventDefault();
+    if (window.parent && window.parent !== window)
+        window.parent.postMessage({ type: 'iframe-mousedown', button: 1, x: e.clientX, y: e.clientY, altKey: e.altKey }, '*');
+});
+document.addEventListener('mouseup', e => {
+    if (e.button !== 1) return;
+    if (window.parent && window.parent !== window)
+        window.parent.postMessage({ type: 'iframe-mouseup', button: 1, x: e.clientX, y: e.clientY }, '*');
+});
+document.addEventListener('mousemove', e => {
+    if (e.buttons !== 4) return;
+    if (window.parent && window.parent !== window)
+        window.parent.postMessage({ type: 'iframe-mousemove', x: e.clientX, y: e.clientY }, '*');
+});
 
 load();
-
-// ── Relay middle-click for radial menu ───────────────────────
-document.addEventListener('mousedown', function(e) {
-    if (e.button !== 1) return;
-    e.preventDefault();
-    if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'iframe-mousedown', button: 1, x: e.clientX, y: e.clientY, altKey: e.altKey }, '*');
-    }
-});
-document.addEventListener('mouseup', function(e) {
-    if (e.button !== 1) return;
-    if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'iframe-mouseup', button: 1, x: e.clientX, y: e.clientY }, '*');
-    }
-});
-document.addEventListener('mousemove', function(e) {
-    if (e.buttons !== 4) return;
-    if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'iframe-mousemove', x: e.clientX, y: e.clientY }, '*');
-    }
-});
 </script>
 </body>
 </html>

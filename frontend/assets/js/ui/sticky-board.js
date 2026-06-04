@@ -789,6 +789,27 @@ export class StickyBoard {
         img.draggable = false;
 
         overlay.appendChild(img);
+
+        // Copy button
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'wb-lightbox-copy';
+        copyBtn.textContent = '复制';
+        copyBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            try {
+                const res = await fetch(src);
+                if (!res.ok) throw new Error(res.statusText);
+                const blob = await res.blob();
+                await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+                copyBtn.classList.add('is-copied');
+                copyBtn.textContent = '已复制';
+                setTimeout(() => { copyBtn.classList.remove('is-copied'); copyBtn.textContent = '复制'; }, 1800);
+            } catch (err) {
+                alert('复制失败：' + err.message);
+            }
+        });
+        overlay.appendChild(copyBtn);
+
         document.body.appendChild(overlay);
         this._lightboxEl = overlay;
 

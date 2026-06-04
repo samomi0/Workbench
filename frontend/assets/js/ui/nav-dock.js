@@ -242,11 +242,27 @@ export class NavDock {
         }, 0);
     }
 
-    /** Position popup relative to the dock, preferring upward direction. */
+    /** Position popup relative to the dock, preferring upward direction.
+     * Height is calculated dynamically from the number of matching items. */
     _positionPopup() {
         const dockRect = this._trigger.getBoundingClientRect();
         const popupW = 220;
-        const popupH = Math.min(340, this._popup.scrollHeight || 200);
+
+        // Dynamically calculate height based on visible item count
+        const searchH = 42;   // search-wrap height (padding + input)
+        const itemH  = 34;    // each nav-item height (padding + line-height)
+        const listPad = 8;    // list top/bottom padding
+        const maxH    = Math.min(window.innerHeight - 20, 440);
+
+        let visibleCount = this._items.length;
+        const q = (this._searchInput.value || '').toLowerCase();
+        if (q) {
+            visibleCount = this._items.filter(it =>
+                (it.name || it.label || '').toLowerCase().includes(q) ||
+                (it.id || '').toLowerCase().includes(q)).length;
+        }
+        const naturalH = searchH + Math.max(1, visibleCount || 1) * itemH + listPad;
+        const popupH = Math.min(maxH, naturalH);
 
         // Default: open above the dock
         let top  = dockRect.top - popupH - 8;

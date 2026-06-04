@@ -90,5 +90,26 @@ export const api = {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         },
+
+        /**
+         * POST /api/archive/notes, download archived notes as ZIP.
+         * @param {string[]} noteIds
+         * @param {string}   filename
+         */
+        downloadNotes: async (noteIds, filename = 'archive.zip') => {
+            const res  = await req('/api/archive/notes', {
+                method: 'POST',
+                body:   body({ note_ids: noteIds, filename }),
+            });
+            const blob = await res.blob();
+            const url  = URL.createObjectURL(blob);
+            const a    = Object.assign(document.createElement('a'), {
+                href: url, download: filename,
+            });
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        },
     },
 };
