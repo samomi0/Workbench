@@ -500,6 +500,7 @@ export class StickyBoard {
         const renderItem = (item) => {
             const row = document.createElement('div');
             row.className = 'wb-todo-row' + (item.done ? ' is-done' : '');
+            row.dataset.itemId = item.id;
 
             const cb = document.createElement('input');
             cb.type      = 'checkbox';
@@ -508,6 +509,7 @@ export class StickyBoard {
             cb.addEventListener('change', () => {
                 item.done = cb.checked;
                 row.classList.toggle('is-done', item.done);
+                this._sortAndReorderTodoItems(note, list, addRow);
                 this._scheduleSync(note);
             });
 
@@ -537,6 +539,12 @@ export class StickyBoard {
             return row;
         };
 
+        // Sort: completed items first, uncompleted below (stable sort)
+        note.items.sort((a, b) => {
+            if (a.done === b.done) return 0;
+            return a.done ? -1 : 1;
+        });
+
         note.items.forEach(item => list.appendChild(renderItem(item)));
 
         addInput.addEventListener('keydown', e => {
@@ -553,6 +561,32 @@ export class StickyBoard {
         addRow.appendChild(addInput);
         list.appendChild(addRow);
         body.appendChild(list);
+    }
+
+    /**
+     * Sort note.items so completed items come first, then reorder DOM rows to match.
+     * Stable sort preserves relative order within each group (done / not-done).
+     */
+    _sortAndReorderTodoItems(note, list, addRow) {
+        // Stable sort: done → top, undone → bottom
+        note.items.sort((a, b) => {
+            if (a.done === b.done) return 0;
+            return a.done ? -1 : 1;
+        });
+
+        // Collect existing rows keyed by item id
+        const rowMap = new Map();
+        for (const row of list.querySelectorAll('.wb-todo-row')) {
+            rowMap.set(row.dataset.itemId, row);
+        }
+
+        // Re-insert rows in sorted order before addRow
+        for (const item of note.items) {
+            const row = rowMap.get(item.id);
+            if (row) {
+                list.insertBefore(row, addRow);
+            }
+        }
     }
 
     // ── Ticket note body ──────────────────────────────────────────────────────

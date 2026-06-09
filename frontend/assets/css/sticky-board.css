@@ -175,6 +175,7 @@
     padding: 3px 6px;
     border-radius: 4px;
     min-height: 26px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
 .wb-todo-row:hover { background: rgba(0,0,0,0.04); }

@@ -557,7 +557,7 @@ function makeCard(note) {
     const badge = document.createElement('span');
     const displayType = note.type === 'image' ? 'note' : note.type;
     badge.className = 'av-badge ' + (noteHasImages(note) ? 'av-badge-image' : (BADGE_CLASS[displayType] || 'av-badge-note'));
-    badge.textContent = noteHasImages(note) ? '便签🖼' : (BADGE_LABEL[displayType] || '便签');
+    badge.textContent = noteHasImages(note) ? '便签+' : (BADGE_LABEL[displayType] || '便签');
     top.appendChild(badge);
 
     const tagPills = document.createElement('div');
@@ -664,7 +664,7 @@ function makePreview(note) {
                 if (imgs.length > 1) {
                     const more = document.createElement('div');
                     more.style.cssText = 'font-size:11px;color:var(--muted);';
-                    more.textContent = `📷 +${imgs.length - 1} 张`; el.appendChild(more);
+                    more.textContent = `+${imgs.length - 1}`; el.appendChild(more);
                 }
             } else if (note.text) {
                 el.textContent = note.text;
@@ -805,7 +805,7 @@ function openViewer(note) {
     avModalAccent.style.background = note.color || '#d4c9b5';
     const displayType = note.type === 'image' ? 'note' : note.type;
     avModalBadge.className = 'av-badge ' + (noteHasImages(note) ? 'av-badge-image' : (BADGE_CLASS[displayType] || 'av-badge-note'));
-    avModalBadge.textContent = noteHasImages(note) ? '便签🖼' : (BADGE_LABEL[displayType] || '便签');
+    avModalBadge.textContent = noteHasImages(note) ? '便签+' : (BADGE_LABEL[displayType] || '便签');
     avModalBody.innerHTML = '';
 
     // Show images for image-type notes or notes with inline images
