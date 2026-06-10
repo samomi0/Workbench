@@ -10,6 +10,17 @@ DEV_MODE: bool = os.environ.get("DEV_MODE", "false").lower() == "true"
 DATA_DIR: Path = Path(os.environ.get("DATA_DIR", str(_PROJECT_DIR / "data")))
 FRONTEND_DIR: Path = _PROJECT_DIR / "frontend"
 
+# ── Auto-backup settings ─────────────────────────────────────────────────────
+BACKUP_DIR: Path = Path(
+    os.environ.get("BACKUP_DIR", str(_PROJECT_DIR / "backups"))
+)
+BACKUP_INTERVAL_HOURS: int = int(
+    os.environ.get("BACKUP_INTERVAL_HOURS", "8")
+)
+BACKUP_RETENTION_HOURS: int = int(
+    os.environ.get("BACKUP_RETENTION_HOURS", "72")  # 3 days
+)
+
 
 def _bootstrap() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)

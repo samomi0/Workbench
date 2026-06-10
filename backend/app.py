@@ -14,6 +14,7 @@ from api.tags import router as tags_router
 from api.tools import router as tools_router
 from custom.registry import load_custom_routers
 from mock.registry import load_mock_services
+from services.backup_service import start_backup_scheduler
 
 if config.DEV_MODE:
     from dev.router import router as dev_router
@@ -24,6 +25,7 @@ if config.DEV_MODE:
 async def lifespan(app: FastAPI):
     if config.DEV_MODE:
         asyncio.create_task(watcher.start())
+    start_backup_scheduler()
     yield
 
 
