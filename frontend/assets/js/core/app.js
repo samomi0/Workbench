@@ -95,7 +95,6 @@ function homeRadialItems() {
     const items = [
         { id: 'new-note',   icon: 'icon-note',   label: '新建便笺', action: () => board.createNote(menu.openPos, 'note') },
         { id: 'new-todo',   icon: 'icon-todo',   label: 'Todo',     action: () => board.createNote(menu.openPos, 'todo') },
-        { id: 'new-ticket', icon: 'icon-ticket', label: '工单',     action: () => board.createNote(menu.openPos, 'ticket') },
     ];
     const archiveTool = _tools.find(t => t.id === 'archive-view');
     const tagTool     = _tools.find(t => t.id === 'tag-manager');

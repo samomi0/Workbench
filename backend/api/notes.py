@@ -1,5 +1,6 @@
 import shutil
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -44,6 +45,7 @@ class NoteCreate(BaseModel):
     links: Optional[List[Any]] = None
     image_ext: Optional[str] = None
     images: Optional[List[Any]] = None
+    created_at: Optional[str] = None
 
 
 class NoteUpdate(BaseModel):
@@ -60,6 +62,7 @@ class NoteUpdate(BaseModel):
     links: Optional[List[Any]] = None
     image_ext: Optional[str] = None
     images: Optional[List[Any]] = None
+    created_at: Optional[str] = None
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -74,13 +77,14 @@ def list_notes(archived: bool = False):
 def create_note(body: NoteCreate):
     notes = _load()
     note: dict = {
-        "id":       str(uuid.uuid4()),
-        "type":     body.type,
-        "x":        body.x,
-        "y":        body.y,
-        "color":    body.color,
-        "tag_ids":  body.tag_ids,
-        "archived": False,
+        "id":         str(uuid.uuid4()),
+        "type":       body.type,
+        "x":          body.x,
+        "y":          body.y,
+        "color":      body.color,
+        "tag_ids":    body.tag_ids,
+        "archived":   False,
+        "created_at": body.created_at or datetime.now(timezone.utc).isoformat(),
     }
     if body.w is not None: note["w"] = body.w
     if body.h is not None: note["h"] = body.h
@@ -106,10 +110,11 @@ def update_note(note_id: str, body: NoteUpdate):
     for note in notes:
         if note["id"] == note_id:
             for field in ("x", "y", "w", "h", "color", "tag_ids", "archived",
-                          "text", "items", "content", "links", "image_ext", "images"):
+                          "text", "items", "content", "links", "image_ext", "images", "created_at"):
                 val = getattr(body, field)
                 if val is not None:
                     note[field] = val
+            note["updated_at"] = datetime.now(timezone.utc).isoformat()
             _store.write(notes)
             return note
     raise HTTPException(status_code=404, detail="Note not found")

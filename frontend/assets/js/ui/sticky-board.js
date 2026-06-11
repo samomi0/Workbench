@@ -1,7 +1,7 @@
 /**
  * sticky-board.js
  * Multi-type sticky notes backed by the /api/notes REST API.
- * Types: note | todo | ticket | image
+ * Types: note | todo | image (legacy)
  */
 
 import { api } from '../core/api.js';
@@ -11,6 +11,17 @@ import { ColorWheel, randomMorandi, MORANDI_LINK_PALETTE } from './color-wheel.j
 const NOTE_W = 260;   // default note width (px)
 
 let _zTop = 100;
+
+/** Format an ISO timestamp for display. */
+function fmtDate(iso) {
+    if (!iso) return '';
+    try {
+        return new Date(iso).toLocaleString('zh-CN', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit',
+        });
+    } catch (_) { return iso; }
+}
 
 export class StickyBoard {
     /**
@@ -48,15 +59,14 @@ export class StickyBoard {
     /**
      * Create a new note of the given type, centred on pos.
      * @param {{ x: number, y: number }|null} pos  Viewport coordinates (menu click point)
-     * @param {'note'|'todo'|'ticket'} type
+     * @param {'note'|'todo'} type
      */
     async createNote(pos, type = 'note') {
         const { nx, ny } = this._clampPos(pos);
 
         const data = { type, x: nx, y: ny, color: randomMorandi() };
-        if (type === 'note')   data.text    = '';
+        if (type === 'note')   { data.text = ''; data.images = []; data.links = []; }
         if (type === 'todo')   data.items   = [];
-        if (type === 'ticket') { data.content = ''; data.links = []; }
 
         try {
             const note = await api.notes.create(data);
@@ -119,9 +129,9 @@ export class StickyBoard {
         const payload = { x: note.x, y: note.y, color: note.color, tag_ids: note.tag_ids || [] };
         if (note.w) payload.w = note.w;
         if (note.h) payload.h = note.h;
-        if (note.type === 'note')   { payload.text = note.text; payload.images = note.images || []; }
+        if (note.type === 'note')   { payload.text = note.text; payload.images = note.images || []; payload.links = note.links || []; }
         if (note.type === 'todo')   payload.items   = note.items;
-        if (note.type === 'ticket') { payload.content = note.content; payload.links = note.links; }
+        if (note.created_at != null) payload.created_at = note.created_at;
         try { await api.notes.update(note.id, payload); } catch (_) {}
     }
 
@@ -172,11 +182,17 @@ export class StickyBoard {
         body.className = 'wb-sticky-body';
         switch (note.type) {
             case 'todo':   this._buildTodoBody(note, body);   break;
-            case 'ticket': this._buildTicketBody(note, body); break;
             case 'image':  this._buildImageBody(note, body);  break;
             default:       this._buildTextBody(note, body);   break;
         }
         el.appendChild(body);
+
+        // Timestamp bar (below body; tag badges will be inserted between body and ts-bar)
+        const tsBar = this._makeTsBar(note);
+        if (tsBar) {
+            el.classList.add('has-ts-bar');
+            el.appendChild(tsBar);
+        }
 
         // Tag badges row
         this._renderTagBadges(el, note);
@@ -189,6 +205,39 @@ export class StickyBoard {
     }
 
     // ── Header ────────────────────────────────────────────────────────────────
+
+    /** Returns a timestamp bar element, or null if no created_at is set. */
+    _makeTsBar(note) {
+        const bar = document.createElement('div');
+        bar.className = 'wb-sticky-ts-bar';
+        const span = document.createElement('span');
+        span.className = 'wb-sticky-ts-text';
+        span.textContent = note.created_at ? fmtDate(note.created_at) : '设置时间';
+        span.title = '点击修改创建时间';
+        span.addEventListener('click', e => {
+            e.stopPropagation();
+            const input = document.createElement('input');
+            input.type = 'datetime-local';
+            input.className = 'wb-sticky-ts-input';
+            if (note.created_at) {
+                const d = new Date(note.created_at);
+                input.value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            }
+            const apply = () => {
+                if (input.value) {
+                    note.created_at = new Date(input.value).toISOString();
+                    span.textContent = fmtDate(note.created_at);
+                    this._scheduleSync(note);
+                }
+                if (input.parentNode) input.replaceWith(span);
+            };
+            input.addEventListener('change', apply);
+            input.addEventListener('blur', () => setTimeout(() => { if (input.parentNode) apply(); }, 150));
+            span.replaceWith(input);
+        });
+        bar.appendChild(span);
+        return bar;
+    }
 
     _makeHead(note) {
         const head = document.createElement('div');
@@ -288,9 +337,18 @@ export class StickyBoard {
             if (!tag) continue;
             const pill = document.createElement('span');
             pill.className = 'wb-sticky-tag-pill';
-            pill.textContent = tag.name;
             pill.style.background = tag.color || '#8492a6';
             pill.title = `移除标签 "${tag.name}"`;
+
+            // Tag icon
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'wb-pill-icon';
+            iconSpan.innerHTML = `<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = tag.name;
+
+            pill.append(iconSpan, nameSpan);
             pill.addEventListener('click', e => {
                 e.stopPropagation();
                 note.tag_ids = (note.tag_ids || []).filter(id => id !== tid);
@@ -356,10 +414,11 @@ export class StickyBoard {
         wheel.open(null, anchor);
     }
 
-    // ── Text note body (supports text + multiple inline images) ──────────────
+    // ── Text note body (supports text + multiple inline images + links) ──────
 
     _buildTextBody(note, body) {
         if (!Array.isArray(note.images)) note.images = [];
+        if (!Array.isArray(note.links))  note.links  = [];
 
         const ta = document.createElement('textarea');
         ta.className   = 'wb-sticky-text';
@@ -388,6 +447,23 @@ export class StickyBoard {
         // Image strip (shown even when empty so new images can be appended)
         const strip = this._makeImgStrip(note);
         body.appendChild(strip);
+
+        // ── Link area ─────────────────────────────────────────────────────
+        const linkArea = document.createElement('div');
+        linkArea.className = 'wb-note-links';
+
+        note.links.forEach(link => linkArea.appendChild(this._mkLinkBtn(note, link)));
+
+        const addLinkBtn = document.createElement('button');
+        addLinkBtn.className   = 'wb-note-add-link-btn';
+        addLinkBtn.textContent = '+ 链接';
+        addLinkBtn.addEventListener('mousedown', e => e.stopPropagation());
+        addLinkBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            this._showAddLinkForm(note, linkArea, addLinkBtn);
+        });
+        linkArea.appendChild(addLinkBtn);
+        body.appendChild(linkArea);
     }
 
     // ── Per-note image strip helpers ──────────────────────────────────────────
@@ -589,43 +665,12 @@ export class StickyBoard {
         }
     }
 
-    // ── Ticket note body ──────────────────────────────────────────────────────
-
-    _buildTicketBody(note, body) {
-        if (!Array.isArray(note.links)) note.links = [];
-
-        const ta = document.createElement('textarea');
-        ta.className   = 'wb-sticky-text wb-ticket-content';
-        ta.value       = note.content || '';
-        ta.placeholder = '内容…';
-        ta.addEventListener('input', () => {
-            note.content = ta.value;
-            this._scheduleSync(note);
-        });
-        ta.addEventListener('mousedown', e => { if (e.button === 1) e.stopPropagation(); });
-        body.appendChild(ta);
-
-        const linkArea = document.createElement('div');
-        linkArea.className = 'wb-ticket-links';
-
-        note.links.forEach(link => linkArea.appendChild(this._mkLinkBtn(note, link)));
-
-        const addBtn = document.createElement('button');
-        addBtn.className   = 'wb-ticket-add-link-btn';
-        addBtn.textContent = '+ 链接';
-        addBtn.addEventListener('mousedown', e => e.stopPropagation());
-        addBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            this._showAddLinkForm(note, linkArea, addBtn);
-        });
-        linkArea.appendChild(addBtn);
-        body.appendChild(linkArea);
-    }
+    // ── Link helpers (embedded in note body) ──────────────────────────────────
 
     _mkLinkBtn(note, link) {
         const palette = this._hexToLinkPalette(link.colorHex || '#d4c9b5');
         const btn     = document.createElement('button');
-        btn.className         = 'wb-ticket-link-btn';
+        btn.className         = 'wb-note-link-btn';
         btn.title             = link.url;
         btn.style.background  = palette.bg;
         btn.style.borderColor = palette.border;
@@ -633,33 +678,26 @@ export class StickyBoard {
         btn.addEventListener('mouseenter', () => { btn.style.filter = 'brightness(0.91) saturate(1.1)'; });
         btn.addEventListener('mouseleave', () => { btn.style.filter = ''; });
 
+        // Link icon
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'wb-link-icon';
+        iconSpan.innerHTML = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+
         const labelSpan = document.createElement('span');
+        labelSpan.className = 'wb-link-label';
         labelSpan.textContent = link.label || link.url;
 
-        const delSpan = document.createElement('span');
-        delSpan.className   = 'wb-link-del';
-        delSpan.textContent = '\u00d7'; // ×
-        delSpan.title       = '删除链接';
-        delSpan.addEventListener('click', e => {
-            e.stopPropagation();
-            note.links = note.links.filter(l => l.id !== link.id);
-            btn.remove();
-            this._scheduleSync(note);
-        });
-
-        btn.append(labelSpan, delSpan);
+        btn.append(iconSpan, labelSpan);
         btn.addEventListener('click', e => {
-            if (e.target === delSpan) return;
+            if (e.target.closest('.wb-link-edit')) return;
             e.stopPropagation();
             window.open(link.url, '_blank', 'noopener,noreferrer');
         });
-        // Right-click also removes (legacy)
+        // Right-click → open edit form
         btn.addEventListener('contextmenu', e => {
             e.preventDefault();
             e.stopPropagation();
-            note.links = note.links.filter(l => l.id !== link.id);
-            btn.remove();
-            this._scheduleSync(note);
+            this._showEditLinkForm(note, link, btn);
         });
         return btn;
     }
@@ -690,29 +728,29 @@ export class StickyBoard {
     }
 
     _showAddLinkForm(note, linkArea, addBtn) {
-        if (linkArea.querySelector('.wb-ticket-link-form')) return;
+        if (linkArea.querySelector('.wb-note-link-form')) return;
         addBtn.style.display = 'none';
 
         const form = document.createElement('div');
-        form.className = 'wb-ticket-link-form';
+        form.className = 'wb-note-link-form';
 
         const labelInput = document.createElement('input');
         labelInput.type        = 'text';
         labelInput.placeholder = '名称';
-        labelInput.className   = 'wb-ticket-form-input';
+        labelInput.className   = 'wb-link-form-input';
 
         const urlInput = document.createElement('input');
         urlInput.type        = 'text';
         urlInput.placeholder = 'URL (https://…)';
-        urlInput.className   = 'wb-ticket-form-input';
+        urlInput.className   = 'wb-link-form-input';
 
         const okBtn = document.createElement('button');
-        okBtn.textContent = '✓';
-        okBtn.className   = 'wb-ticket-form-ok';
+        okBtn.textContent = '+';
+        okBtn.className   = 'wb-link-form-ok';
 
         const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = '✕';
-        cancelBtn.className   = 'wb-ticket-form-cancel';
+        cancelBtn.textContent = '×';
+        cancelBtn.className   = 'wb-link-form-cancel';
 
         // ── Colour picker for link ──────────────────────────────────────
         let selectedHex = MORANDI_LINK_PALETTE[0].text;
@@ -761,21 +799,22 @@ export class StickyBoard {
             addBtn.style.display = '';
         };
 
-        okBtn.addEventListener('click', e => {
-            e.stopPropagation();
+        const doCreate = () => {
             const url = urlInput.value.trim();
             if (!url) { urlInput.focus(); return; }
             const label = labelInput.value.trim() || url;
             const link  = { id: 'lk' + Date.now(), label, url, colorHex: selectedHex };
+            if (!Array.isArray(note.links)) note.links = [];
             note.links.push(link);
             linkArea.insertBefore(this._mkLinkBtn(note, link), form);
             close();
             this._scheduleSync(note);
-        });
+        };
 
+        okBtn.addEventListener('click', e => { e.stopPropagation(); doCreate(); });
         cancelBtn.addEventListener('click', e => { e.stopPropagation(); close(); });
         urlInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter')  okBtn.click();
+            if (e.key === 'Enter')  doCreate();
             if (e.key === 'Escape') close();
         });
         labelInput.addEventListener('keydown', e => {
@@ -786,6 +825,128 @@ export class StickyBoard {
         form.append(labelInput, urlInput, colorRow, okBtn, cancelBtn);
         linkArea.insertBefore(form, addBtn);
         labelInput.focus();
+    }
+
+    /** Edit an existing link in-place (replaces the link button with a form). */
+    _showEditLinkForm(note, link, btnEl) {
+        const linkArea = btnEl.parentElement;
+        if (!linkArea || linkArea.querySelector('.wb-note-link-form')) return;
+
+        // Hide the link button; show form in its place
+        btnEl.style.display = 'none';
+
+        const form = document.createElement('div');
+        form.className = 'wb-note-link-form wb-note-link-edit-form';
+
+        const labelInput = document.createElement('input');
+        labelInput.type        = 'text';
+        labelInput.placeholder = '名称';
+        labelInput.className   = 'wb-link-form-input';
+        labelInput.value       = link.label || '';
+
+        const urlInput = document.createElement('input');
+        urlInput.type        = 'text';
+        urlInput.placeholder = 'URL (https://…)';
+        urlInput.className   = 'wb-link-form-input';
+        urlInput.value       = link.url || '';
+
+        const okBtn = document.createElement('button');
+        okBtn.textContent = '✓';
+        okBtn.className   = 'wb-link-form-ok';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = '×';
+        cancelBtn.className   = 'wb-link-form-cancel';
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '删';
+        delBtn.className   = 'wb-link-form-del';
+        delBtn.title       = '删除链接';
+
+        // ── Colour picker ──────────────────────────────────────────────
+        let selectedHex = link.colorHex || MORANDI_LINK_PALETTE[0].text;
+        const colorRow = document.createElement('div');
+        colorRow.className = 'wb-link-color-row';
+
+        const colorBtn = document.createElement('button');
+        colorBtn.className = 'wb-link-color-btn';
+        colorBtn.title     = '选择颜色';
+        const p = this._hexToLinkPalette(selectedHex);
+        colorBtn.style.background = p.bg;
+        colorBtn.style.border     = `2px solid ${p.text}`;
+
+        const editWheel = new ColorWheel({
+            onPick: (hex) => {
+                selectedHex = hex;
+                const pp = this._hexToLinkPalette(hex);
+                colorBtn.style.background = pp.bg;
+                colorBtn.style.border     = `2px solid ${pp.text}`;
+            },
+            onPreview: (hex) => {
+                const pp = this._hexToLinkPalette(hex);
+                colorBtn.style.background = pp.bg;
+                colorBtn.style.border     = `2px solid ${pp.text}`;
+            },
+        });
+
+        colorBtn.addEventListener('mousedown', e => {
+            e.stopPropagation();
+            e.preventDefault();
+            editWheel.open(null, colorBtn);
+        });
+
+        const onEMove = e => { if (editWheel.isOpen) editWheel.updateDrag(e.clientX, e.clientY); };
+        const onEUp   = ()  => { if (editWheel.isOpen) editWheel.close(); };
+        document.addEventListener('mousemove', onEMove);
+        document.addEventListener('mouseup',   onEUp);
+
+        colorRow.appendChild(colorBtn);
+
+        const close = () => {
+            document.removeEventListener('mousemove', onEMove);
+            document.removeEventListener('mouseup',   onEUp);
+            form.remove();
+            btnEl.style.display = '';
+        };
+
+        const doSave = () => {
+            const url = urlInput.value.trim();
+            if (!url) { urlInput.focus(); return; }
+            link.url      = url;
+            link.label    = labelInput.value.trim() || url;
+            link.colorHex = selectedHex;
+
+            // Rebuild the link button
+            const newBtn = this._mkLinkBtn(note, link);
+            linkArea.insertBefore(newBtn, form);
+            form.remove();
+            btnEl.remove();
+            this._scheduleSync(note);
+        };
+
+        const doDelete = () => {
+            note.links = (note.links || []).filter(l => l.id !== link.id);
+            form.remove();
+            btnEl.remove();
+            this._scheduleSync(note);
+        };
+
+        okBtn.addEventListener('click', e => { e.stopPropagation(); doSave(); });
+        cancelBtn.addEventListener('click', e => { e.stopPropagation(); close(); });
+        delBtn.addEventListener('click', e => { e.stopPropagation(); doDelete(); });
+        urlInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter')  doSave();
+            if (e.key === 'Escape') close();
+        });
+        labelInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter')  urlInput.focus();
+            if (e.key === 'Escape') close();
+        });
+
+        form.append(labelInput, urlInput, colorRow, okBtn, cancelBtn, delBtn);
+        linkArea.insertBefore(form, btnEl);
+        labelInput.focus();
+        labelInput.select();
     }
 
     // ── Image note body ───────────────────────────────────────────────────────
@@ -924,9 +1085,18 @@ export class StickyBoard {
         const addTagPill = (tag) => {
             const pill = document.createElement('span');
             pill.className = 'wb-tag-dd-pill';
-            pill.textContent = tag.name;
             pill.style.background = tag.color || '#8492a6';
             if ((note.tag_ids || []).includes(tag.id)) pill.classList.add('is-active');
+
+            // Tag icon
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'wb-pill-icon';
+            iconSpan.innerHTML = `<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = tag.name;
+
+            pill.append(iconSpan, nameSpan);
             pill.addEventListener('mousedown', e => e.stopPropagation());
             pill.addEventListener('click', () => {
                 toggleTagOnNote(tag);

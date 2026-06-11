@@ -96,9 +96,11 @@ body {
     white-space: nowrap;
 }
 .av-type-tab:hover { background:rgba(0,0,0,0.08); color:var(--text); }
-.av-type-tab.is-active { background:var(--primary,#2563eb); color:#fff; }
+.av-type-tab.is-active,
+.av-type-tab[data-state="include"] { background:var(--primary,#2563eb); color:#fff; }
+.av-type-tab[data-state="exclude"] { background:rgba(239,68,68,0.12); color:#dc2626; border-color:rgba(239,68,68,0.25); }
 
-.av-has-img-toggle {
+.av-attr-toggle {
     display:inline-flex; align-items:center; gap:4px;
     padding:4px 12px; border-radius:16px;
     border:1.5px dashed rgba(0,0,0,0.14); background:rgba(255,255,255,0.75);
@@ -106,20 +108,29 @@ body {
     cursor:pointer; white-space:nowrap; flex-shrink:0;
     transition:border-color var(--dur-fast) ease,color var(--dur-fast) ease,background var(--dur-fast) ease;
 }
-.av-has-img-toggle:hover { border-color:rgba(0,0,0,0.25); color:var(--text); }
-.av-has-img-toggle.is-active {
+.av-attr-toggle:hover { border-color:rgba(0,0,0,0.25); color:var(--text); }
+.av-attr-toggle[data-state="has"] {
     border-style:solid; border-color:var(--primary,#2563eb);
     background:rgba(37,99,235,0.06); color:var(--primary,#2563eb);
     box-shadow:0 0 0 2.5px var(--primary-dim,rgba(37,99,235,0.15));
 }
-.av-has-img-toggle.is-disabled { opacity:0.32; pointer-events:none; }
+.av-attr-toggle[data-state="none"] {
+    border-style:solid; border-color:rgba(239,68,68,0.35);
+    background:rgba(239,68,68,0.05); color:#dc2626;
+}
+
+/* ── Tag filter wrapper ───────────────────────────────────── */
+.av-tag-filter-wrap { display:flex; flex-direction:column; gap:5px; }
 
 .av-tag-row {
-    display:flex; gap:5px; overflow-x:auto; scrollbar-width:none;
-    padding-bottom:2px; min-height:0;
+    display:flex; flex-wrap:wrap; gap:5px; row-gap:5px;
+    padding: 2px 2px 4px; min-height:0;
+    max-height: 76px; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.12) transparent;
 }
 .av-tag-row:empty { display:none; }
-.av-tag-row::-webkit-scrollbar { display:none; }
+.av-tag-row::-webkit-scrollbar { width:4px; }
+.av-tag-row::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.12); border-radius:2px; }
 
 .av-tag-pill {
     display:inline-flex; align-items:center; gap:5px;
@@ -127,12 +138,123 @@ body {
     border: 1.5px solid rgba(0,0,0,0.09); background:rgba(255,255,255,0.8);
     font-size:11px; font-family:var(--font-ui); color:var(--text);
     cursor:pointer; white-space:nowrap; flex-shrink:0;
-    transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+    line-height: 1.4;
+    transition: border-color 0.12s ease, outline-color 0.12s ease;
 }
 .av-tag-pill:hover { border-color:rgba(0,0,0,0.20); background:#fff; }
-.av-tag-pill.is-active { box-shadow:0 0 0 2px rgba(0,0,0,0.20); border-color:transparent; }
+.av-tag-pill[data-state="include"] {
+    outline: 2px solid var(--av-pill-color, rgba(37,99,235,0.25));
+    outline-offset: 1px;
+    border-color: transparent;
+}
+.av-tag-pill[data-state="exclude"] {
+    outline: 2px solid rgba(239,68,68,0.35);
+    outline-offset: 1px;
+    border-color: transparent;
+    color:#dc2626;
+    background:rgba(254,242,242,0.9);
+}
 
 .av-tag-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ── Date range filter ────────────────────────────────────── */
+.av-date-wrap {
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+.av-date-chips {
+    display:flex;
+    gap:5px;
+    flex-wrap:wrap;
+}
+.av-date-chip {
+    padding:4px 12px;
+    border:1px solid transparent;
+    border-radius:16px;
+    font-size:12px;
+    font-family:var(--font-ui);
+    background:rgba(0,0,0,0.04);
+    color:var(--muted,#8492a6);
+    cursor:pointer;
+    transition:background var(--dur-fast) ease, color var(--dur-fast) ease;
+    white-space:nowrap;
+}
+.av-date-chip:hover { background:rgba(0,0,0,0.08); color:var(--text); }
+.av-date-chip.is-active { background:var(--primary,#2563eb); color:#fff; }
+.av-date-chip.is-custom.is-active { background:rgba(15,23,42,0.82); color:#fff; }
+.av-date-custom {
+    display:none;
+    align-items:center;
+    gap:5px;
+    flex-wrap:wrap;
+    padding:8px 10px;
+    border:1px solid rgba(0,0,0,0.06);
+    border-radius:10px;
+    background:rgba(255,255,255,0.72);
+}
+.av-date-custom.is-open { display:flex; }
+.av-date-custom-label {
+    font-size:11px;
+    color:var(--muted,#8492a6);
+    font-weight:600;
+    letter-spacing:0.02em;
+    white-space:nowrap;
+}
+.av-date-sep { font-size:12px; color:var(--muted,#8492a6); flex-shrink:0; }
+.av-date-input {
+    height:28px; padding:0 7px; flex:1; min-width:108px; max-width:148px;
+    border:1px solid var(--border,#e4e7ed); border-radius:6px;
+    font-size:12px; font-family:var(--font-ui); background:#fff; color:var(--text);
+    outline:none; transition:border-color 0.12s ease;
+}
+.av-date-input:focus { border-color:var(--primary,#2563eb); }
+.av-date-clear-btn {
+    height:24px;
+    padding:0 10px;
+    border:1px solid rgba(0,0,0,0.10);
+    background:transparent;
+    color:var(--muted,#8492a6);
+    cursor:pointer;
+    font-size:11px;
+    font-family:var(--font-ui);
+    border-radius:12px;
+    line-height:1;
+    flex-shrink:0;
+    transition:color 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+.av-date-clear-btn:hover { color:#dc2626; background:rgba(239,68,68,0.07); border-color:rgba(239,68,68,0.22); }
+
+/* ── Modal timestamp section ──────────────────────────────── */
+.av-modal-ts-section {
+    margin-top:14px; padding-top:12px;
+    border-top:1px solid var(--border,#e4e7ed);
+    display:flex; flex-direction:column; gap:7px;
+}
+.av-modal-ts-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.av-modal-ts-label {
+    font-size:11px; color:var(--muted,#8492a6); font-weight:600;
+    text-transform:uppercase; letter-spacing:0.05em; flex-shrink:0; min-width:56px;
+}
+.av-modal-ts-val { font-size:12px; color:var(--text); }
+.av-modal-ts-edit {
+    padding:2px 8px; border-radius:5px; font-size:11px; font-family:var(--font-ui);
+    border:1px solid var(--border,#e4e7ed); background:rgba(0,0,0,0.03);
+    color:var(--muted,#8492a6); cursor:pointer; transition:color 0.12s ease, border-color 0.12s ease;
+}
+.av-modal-ts-edit:hover { border-color:var(--primary,#2563eb); color:var(--primary,#2563eb); }
+.av-modal-ts-input {
+    height:26px; padding:0 7px; border:1px solid var(--border,#e4e7ed);
+    border-radius:5px; font-size:12px; font-family:var(--font-ui);
+    background:#fff; color:var(--text); outline:none;
+}
+.av-modal-ts-input:focus { border-color:var(--primary,#2563eb); }
+.av-modal-ts-save {
+    height:26px; padding:0 12px; border:none; border-radius:5px;
+    background:var(--primary,#2563eb); color:#fff;
+    font-size:11px; font-family:var(--font-ui); font-weight:600; cursor:pointer;
+}
+.av-modal-ts-save:hover { filter:brightness(1.08); }
 
 /* ── Batch Bar ────────────────────────────────────────────── */
 .av-batch-bar {
@@ -371,10 +493,27 @@ body {
         <button class="av-type-tab is-active" data-type="">全部</button>
         <button class="av-type-tab" data-type="note">便签</button>
         <button class="av-type-tab" data-type="todo">Todo</button>
-        <button class="av-type-tab" data-type="ticket">工单</button>
-        <button class="av-has-img-toggle" id="avHasImgToggle">🖼 含图片</button>
+        <button class="av-attr-toggle" id="avHasImgToggle" data-state="any">🖼 图片</button>
+        <button class="av-attr-toggle" id="avHasLinkToggle" data-state="any">🔗 链接</button>
     </div>
-    <div class="av-tag-row" id="avTagRow"></div>
+    <div class="av-tag-filter-wrap">
+        <div class="av-tag-row" id="avTagRow"></div>
+    </div>
+    <div class="av-date-wrap">
+        <div class="av-date-chips" id="avDateChips">
+            <button class="av-date-chip is-active" data-range="all">全部</button>
+            <button class="av-date-chip" data-range="week">本周</button>
+            <button class="av-date-chip" data-range="month" id="avDateChipMonth">4月</button>
+            <button class="av-date-chip is-custom" data-range="custom">自定义</button>
+        </div>
+        <div class="av-date-custom" id="avDateCustom">
+            <span class="av-date-custom-label">自定义区间</span>
+            <input type="date" id="avDateFrom" class="av-date-input" title="起始日期">
+            <span class="av-date-sep">—</span>
+            <input type="date" id="avDateTo" class="av-date-input" title="截止日期">
+            <button id="avDateClear" class="av-date-clear-btn" title="清除日期">清除</button>
+        </div>
+    </div>
 </div>
 
 <!-- Batch action bar -->
@@ -423,11 +562,14 @@ body {
 <script>
 'use strict';
 
-const BADGE_LABEL = { note: '便签', todo: 'Todo', ticket: '工单', image: '图片' };
-const BADGE_CLASS = { note:'av-badge-note', todo:'av-badge-todo', ticket:'av-badge-ticket', image:'av-badge-image' };
+const BADGE_LABEL = { note: '便签', todo: 'Todo', image: '图片' };
+const BADGE_CLASS = { note:'av-badge-note', todo:'av-badge-todo', image:'av-badge-image' };
 
 let allNotes = [], allTags = [], tagMap = {};
-let filterType = '', filterTagId = '', filterSearch = '', filterHasImage = false;
+let filterSearch = '', filterImg = 'any', filterLink = 'any';
+let filterTypeStates = new Map();
+let filterTagStates = new Map();
+let filterDatePreset = 'all', filterDateFrom = null, filterDateTo = null;
 let selectedIds = new Set();
 
 const avCount        = document.getElementById('avCount');
@@ -435,7 +577,13 @@ const avMain         = document.getElementById('avMain');
 const avSearch       = document.getElementById('avSearch');
 const avTypeTabs     = document.getElementById('avTypeTabs');
 const avHasImgToggle = document.getElementById('avHasImgToggle');
+const avHasLinkToggle = document.getElementById('avHasLinkToggle');
 const avTagRow       = document.getElementById('avTagRow');
+const avDateChips    = document.getElementById('avDateChips');
+const avDateCustom   = document.getElementById('avDateCustom');
+const avDateFrom     = document.getElementById('avDateFrom');
+const avDateTo       = document.getElementById('avDateTo');
+const avDateClear    = document.getElementById('avDateClear');
 const avBatchBar     = document.getElementById('avBatchBar');
 const avBatchLabel   = document.getElementById('avBatchLabel');
 const avCheckAll     = document.getElementById('avCheckAll');
@@ -474,22 +622,103 @@ function buildTagRow() {
     avTagRow.innerHTML = '';
     allTags.forEach(tag => {
         const pill = document.createElement('button');
-        const isActive = filterTagId === tag.id;
-        pill.className = 'av-tag-pill' + (isActive ? ' is-active' : '');
-        if (isActive) {
-            pill.style.boxShadow = `0 0 0 2px ${tag.color}66`;
-            pill.style.borderColor = 'transparent';
-        }
+        const state = filterTagStates.get(tag.id) || 'any';
+        pill.className = 'av-tag-pill';
+        pill.dataset.state = state;
+        pill.style.setProperty('--av-pill-color', tag.color || 'rgba(37,99,235,0.25)');
         const dot = document.createElement('span');
         dot.className = 'av-tag-dot';
         dot.style.background = tag.color || '#8492a6';
         pill.append(dot, document.createTextNode(tag.name));
         pill.addEventListener('click', () => {
-            filterTagId = filterTagId === tag.id ? '' : tag.id;
-            buildTagRow(); render();
+            const next = nextTriState(state);
+            if (next === 'any') filterTagStates.delete(tag.id);
+            else filterTagStates.set(tag.id, next);
+            buildTagRow();
+            render();
         });
         avTagRow.appendChild(pill);
     });
+}
+
+function nextTriState(state) {
+    if (!state || state === 'any') return 'include';
+    if (state === 'include') return 'exclude';
+    return 'any';
+}
+
+function formatDateValue(date) {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function startOfDay(date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+function endOfDay(date) {
+    const d = new Date(date);
+    d.setHours(23, 59, 59, 999);
+    return d;
+}
+
+function updateTypeTabStates() {
+    const hasFilters = filterTypeStates.size > 0;
+    avTypeTabs.querySelectorAll('.av-type-tab').forEach(tab => {
+        if (tab.dataset.type === '') {
+            tab.classList.toggle('is-active', !hasFilters);
+            tab.dataset.state = 'any';
+            return;
+        }
+        const state = filterTypeStates.get(tab.dataset.type) || 'any';
+        tab.classList.remove('is-active');
+        tab.dataset.state = state;
+    });
+}
+
+function setDatePreset(preset) {
+    filterDatePreset = preset;
+    const now = new Date();
+    if (preset === 'all') {
+        filterDateFrom = null;
+        filterDateTo = null;
+    } else if (preset === 'week') {
+        // Monday to Sunday of the current week
+        const dayOfWeek = now.getDay(); // 0=Sunday
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const sundayOffset = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+        const monday = new Date(now); monday.setDate(monday.getDate() + mondayOffset);
+        const sunday = new Date(now); sunday.setDate(sunday.getDate() + sundayOffset);
+        filterDateFrom = startOfDay(monday);
+        filterDateTo = endOfDay(sunday);
+    } else if (preset === 'month') {
+        // 1st to last day of current month
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        filterDateFrom = startOfDay(firstDay);
+        filterDateTo = endOfDay(lastDay);
+    }
+    updateDateUi();
+}
+
+function updateDateUi() {
+    // Update month chip label dynamically
+    const monthChip = document.getElementById('avDateChipMonth');
+    if (monthChip) {
+        const now = new Date();
+        monthChip.textContent = (now.getMonth() + 1) + '月';
+    }
+    avDateChips.querySelectorAll('.av-date-chip').forEach(chip => {
+        chip.classList.toggle('is-active', chip.dataset.range === filterDatePreset);
+    });
+    avDateCustom.classList.toggle('is-open', filterDatePreset === 'custom');
+    avDateFrom.value = formatDateValue(filterDateFrom);
+    avDateTo.value = formatDateValue(filterDateTo);
 }
 
 function noteHasImages(note) {
@@ -501,17 +730,48 @@ function noteHasImages(note) {
     return false;
 }
 
+function noteHasLinks(note) {
+    return (note.type === 'note' || note.type === 'ticket') && Array.isArray(note.links) && note.links.length > 0;
+}
+
 function getFiltered() {
     const q = filterSearch.toLowerCase().trim();
+    const includeTypes = new Set([...filterTypeStates.entries()].filter(([, state]) => state === 'include').map(([type]) => type));
+    const excludeTypes = new Set([...filterTypeStates.entries()].filter(([, state]) => state === 'exclude').map(([type]) => type));
+    const includeTags = new Set([...filterTagStates.entries()].filter(([, state]) => state === 'include').map(([tagId]) => tagId));
+    const excludeTags = new Set([...filterTagStates.entries()].filter(([, state]) => state === 'exclude').map(([tagId]) => tagId));
     return allNotes.filter(note => {
-        if (filterType && note.type !== filterType) return false;
-        if (filterHasImage && !noteHasImages(note)) return false;
-        if (filterTagId && !(note.tag_ids || []).includes(filterTagId)) return false;
+        if (includeTypes.size > 0 && !includeTypes.has(note.type)) return false;
+        if (excludeTypes.has(note.type)) return false;
+
+        // Image attribute filter
+        if (filterImg !== 'any') {
+            const hasImg = noteHasImages(note);
+            if (filterImg === 'has'  && !hasImg) return false;
+            if (filterImg === 'none' &&  hasImg) return false;
+        }
+
+        // Link attribute filter
+        if (filterLink !== 'any') {
+            const hasLink = noteHasLinks(note);
+            if (filterLink === 'has'  && !hasLink) return false;
+            if (filterLink === 'none' &&  hasLink) return false;
+        }
+
+        if (includeTags.size > 0 && !(note.tag_ids || []).some(tid => includeTags.has(tid))) return false;
+        if ((note.tag_ids || []).some(tid => excludeTags.has(tid))) return false;
+        if (filterDateFrom || filterDateTo) {
+            const nd = note.created_at ? new Date(note.created_at) : null;
+            if (!nd) return false;
+            if (filterDateFrom && nd < filterDateFrom) return false;
+            if (filterDateTo   && nd > filterDateTo)   return false;
+        }
         if (q) {
             let text = '';
-            if (note.type === 'note' || note.type === 'image') text = note.text || '';
+            if (note.type === 'note' || note.type === 'image' || note.type === 'ticket') {
+                text = (note.text || note.content || '') + ' ' + (note.links || []).map(l => (l.label||'') + ' ' + (l.url||'')).join(' ');
+            }
             if (note.type === 'todo')   text = (note.items || []).map(i => i.text || '').join(' ');
-            if (note.type === 'ticket') text = (note.content || '') + ' ' + (note.links || []).map(l => (l.label||'') + ' ' + (l.url||'')).join(' ');
             if (!text.toLowerCase().includes(q)) return false;
         }
         return true;
@@ -565,7 +825,13 @@ function makeCard(note) {
     (note.tag_ids || []).forEach(tid => {
         const tag = tagMap[tid]; if (!tag) return;
         const p = document.createElement('span');
-        p.className = 'av-card-tag'; p.textContent = tag.name; p.style.background = tag.color || '#8492a6';
+        p.className = 'av-card-tag'; p.style.background = tag.color || '#8492a6';
+        // Tag icon
+        const tIcon = document.createElement('span');
+        tIcon.style.cssText = 'display:inline-flex;align-items:center;margin-right:2px;';
+        tIcon.innerHTML = `<svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+        p.appendChild(tIcon);
+        p.append(document.createTextNode(tag.name));
         tagPills.appendChild(p);
     });
     top.appendChild(tagPills);
@@ -620,22 +886,6 @@ function makePreview(note) {
             }
             break;
         }
-        case 'ticket': {
-            if (note.content) { const p = document.createElement('div'); p.textContent = note.content; el.appendChild(p); }
-            const links = Array.isArray(note.links) ? note.links : [];
-            if (links.length) {
-                const row = document.createElement('div');
-                row.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;';
-                links.slice(0, 3).forEach(lk => {
-                    const a = document.createElement('a');
-                    a.className = 'av-link-pill'; a.href = lk.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-                    a.textContent = lk.label || lk.url; row.appendChild(a);
-                });
-                el.appendChild(row);
-            }
-            if (!note.content && !links.length) { el.textContent = '空工单'; el.classList.add('is-empty'); }
-            break;
-        }
         case 'image': {
             const img = document.createElement('img');
             img.className = 'av-thumb'; img.src = `/api/notes/${note.id}/image`; img.alt = ''; img.loading = 'lazy';
@@ -666,10 +916,34 @@ function makePreview(note) {
                     more.style.cssText = 'font-size:11px;color:var(--muted);';
                     more.textContent = `+${imgs.length - 1}`; el.appendChild(more);
                 }
-            } else if (note.text) {
-                el.textContent = note.text;
+            } else if (note.text || note.content) {
+                el.textContent = note.text || note.content || '';
             } else {
                 el.textContent = '空便签'; el.classList.add('is-empty');
+            }
+            // ── Show link pills for notes with links ──────────────────
+            const links = Array.isArray(note.links) ? note.links : [];
+            if (links.length) {
+                const linkRow = document.createElement('div');
+                linkRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;';
+                links.slice(0, 3).forEach(lk => {
+                    const a = document.createElement('a');
+                    a.className = 'av-link-pill'; a.href = lk.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+                    // Link icon
+                    const lIcon = document.createElement('span');
+                    lIcon.style.cssText = 'display:inline-flex;align-items:center;margin-right:2px;';
+                    lIcon.innerHTML = `<svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+                    a.prepend(lIcon);
+                    a.append(document.createTextNode(lk.label || lk.url));
+                    linkRow.appendChild(a);
+                });
+                if (links.length > 3) {
+                    const more = document.createElement('span');
+                    more.style.cssText = 'font-size:11px;color:var(--muted);padding:1px 4px;';
+                    more.textContent = `+${links.length - 3}`;
+                    linkRow.appendChild(more);
+                }
+                el.appendChild(linkRow);
             }
         }
     }
@@ -801,6 +1075,71 @@ avLbCopyBtn.addEventListener('click', async () => {
     }
 });
 
+function fmtDate(iso) {
+    if (!iso) return '';
+    try {
+        return new Date(iso).toLocaleString('zh-CN', {
+            year:'numeric', month:'2-digit', day:'2-digit',
+            hour:'2-digit', minute:'2-digit',
+        });
+    } catch (_) { return iso; }
+}
+
+function makeTsSection(note) {
+    if (!note.created_at && !note.updated_at) return null;
+    const sec = document.createElement('div');
+    sec.className = 'av-modal-ts-section';
+
+    const mkRow = (label, iso, editable) => {
+        const row = document.createElement('div');
+        row.className = 'av-modal-ts-row';
+        const lbl = document.createElement('span');
+        lbl.className = 'av-modal-ts-label'; lbl.textContent = label;
+        const val = document.createElement('span');
+        val.className = 'av-modal-ts-val'; val.textContent = fmtDate(iso);
+        row.append(lbl, val);
+        if (editable) {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'av-modal-ts-edit'; editBtn.textContent = '编辑';
+            editBtn.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'datetime-local'; input.className = 'av-modal-ts-input';
+                if (note.created_at) {
+                    const d = new Date(note.created_at);
+                    input.value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                }
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'av-modal-ts-save'; saveBtn.textContent = '保存';
+                saveBtn.addEventListener('click', async () => {
+                    if (!input.value) return;
+                    const newIso = new Date(input.value).toISOString();
+                    try {
+                        const r = await fetch(`/api/notes/${note.id}`, {
+                            method:'PUT', headers:{'Content-Type':'application/json'},
+                            body: JSON.stringify({ created_at: newIso }),
+                        });
+                        if (!r.ok) throw new Error(r.statusText);
+                        note.created_at = newIso;
+                        val.textContent = fmtDate(newIso);
+                        input.replaceWith(val);
+                        saveBtn.remove();
+                        editBtn.style.display = '';
+                    } catch (e) { alert('保存失败：' + e.message); }
+                });
+                val.replaceWith(input);
+                editBtn.style.display = 'none';
+                row.appendChild(saveBtn);
+            });
+            row.appendChild(editBtn);
+        }
+        return row;
+    };
+
+    if (note.created_at) sec.appendChild(mkRow('创建时间', note.created_at, true));
+    if (note.updated_at) sec.appendChild(mkRow('修改时间', note.updated_at, false));
+    return sec;
+}
+
 function openViewer(note) {
     avModalAccent.style.background = note.color || '#d4c9b5';
     const displayType = note.type === 'image' ? 'note' : note.type;
@@ -829,17 +1168,6 @@ function openViewer(note) {
     }
 
     switch (note.type) {
-        case 'note':
-        case 'image': {
-            if (note.text) {
-                const pre = document.createElement('div');
-                pre.style.cssText = 'white-space:pre-wrap;word-break:break-all;';
-                pre.textContent = note.text; avModalBody.appendChild(pre);
-            } else if (!imgs.length) {
-                avModalBody.appendChild(document.createTextNode('（空便签）'));
-            }
-            break;
-        }
         case 'todo': {
             const items = Array.isArray(note.items) ? note.items : [];
             if (!items.length) { avModalBody.textContent = '（空 Todo）'; break; }
@@ -850,10 +1178,16 @@ function openViewer(note) {
                 row.append(cb, document.createTextNode(item.text || '')); avModalBody.appendChild(row);
             }); break;
         }
-        case 'ticket': {
-            if (note.content) {
-                const p = document.createElement('div'); p.className = 'av-modal-ticket-content'; p.textContent = note.content; avModalBody.appendChild(p);
+        default: {
+            const displayText = note.text || note.content || '';
+            if (displayText) {
+                const p = document.createElement('div');
+                p.style.cssText = 'white-space:pre-wrap;word-break:break-all;margin-bottom:10px;';
+                p.textContent = displayText; avModalBody.appendChild(p);
+            } else if (!imgs.length) {
+                avModalBody.appendChild(document.createTextNode('（空便签）'));
             }
+            // Show links
             const links = Array.isArray(note.links) ? note.links : [];
             if (links.length) {
                 const head = document.createElement('div'); head.className = 'av-modal-links-head'; head.textContent = '关联链接';
@@ -865,10 +1199,12 @@ function openViewer(note) {
                 });
                 avModalBody.append(head, list);
             }
-            if (!note.content && !links.length) avModalBody.textContent = '（空工单）';
-            break;
         }
     }
+    // Timestamps
+    const tsSection = makeTsSection(note);
+    if (tsSection) avModalBody.appendChild(tsSection);
+
     avModal.classList.add('is-open');
 }
 function closeViewer() { avModal.classList.remove('is-open'); }
@@ -880,28 +1216,39 @@ document.getElementById('avModal').addEventListener('contextmenu', e => { e.prev
 avTypeTabs.addEventListener('click', e => {
     const tab = e.target.closest('.av-type-tab');
     const imgTgl = e.target.closest('#avHasImgToggle');
+    const linkTgl = e.target.closest('#avHasLinkToggle');
     if (tab) {
-        filterType = tab.dataset.type;
-        avTypeTabs.querySelectorAll('.av-type-tab').forEach(t => t.classList.toggle('is-active', t === tab));
-        updateHasImgToggleState();
-        render();
-    } else if (imgTgl && !imgTgl.classList.contains('is-disabled')) {
-        filterHasImage = !filterHasImage;
-        if (filterHasImage) {
-            if (!filterType || filterType === 'todo' || filterType === 'ticket') {
-                filterType = 'note';
-                avTypeTabs.querySelectorAll('.av-type-tab').forEach(t => t.classList.toggle('is-active', t.dataset.type === 'note'));
-            }
+        if (tab.dataset.type === '') {
+            filterTypeStates.clear();
+        } else {
+            const key = tab.dataset.type;
+            const next = nextTriState(filterTypeStates.get(key) || 'any');
+            if (next === 'any') filterTypeStates.delete(key);
+            else filterTypeStates.set(key, next);
         }
-        updateHasImgToggleState();
+        updateTypeTabStates();
+        updateAttrToggleStates();
+        render();
+    } else if (imgTgl) {
+        const states = ['any', 'has', 'none'];
+        const idx = states.indexOf(filterImg);
+        filterImg = states[(idx + 1) % 3];
+        imgTgl.dataset.state = filterImg;
+        updateAttrToggleStates();
+        render();
+    } else if (linkTgl) {
+        const states = ['any', 'has', 'none'];
+        const idx = states.indexOf(filterLink);
+        filterLink = states[(idx + 1) % 3];
+        linkTgl.dataset.state = filterLink;
+        updateAttrToggleStates();
         render();
     }
 });
 
-function updateHasImgToggleState() {
-    const canFilter = !filterType || filterType === 'note';
-    avHasImgToggle.classList.toggle('is-active', filterHasImage);
-    avHasImgToggle.classList.toggle('is-disabled', !canFilter && !filterHasImage);
+function updateAttrToggleStates() {
+    avHasImgToggle.dataset.state = filterImg;
+    avHasLinkToggle.dataset.state = filterLink;
 }
 
 let searchTimer;
@@ -911,11 +1258,45 @@ avSearch.addEventListener('input', () => {
 });
 
 document.getElementById('avRefresh').addEventListener('click', () => {
-    selectedIds.clear(); filterType = ''; filterTagId = ''; filterSearch = ''; filterHasImage = false;
+    selectedIds.clear(); filterSearch = ''; filterImg = 'any'; filterLink = 'any';
+    filterTypeStates.clear();
+    filterTagStates.clear();
     avSearch.value = '';
-    avTypeTabs.querySelectorAll('.av-type-tab').forEach((t, i) => t.classList.toggle('is-active', i === 0));
-    updateHasImgToggleState();
+    setDatePreset('all');
+    updateTypeTabStates();
+    buildTagRow();
+    updateAttrToggleStates();
     updateBatchBar(); load();
+});
+
+avDateChips.addEventListener('click', e => {
+    const chip = e.target.closest('.av-date-chip');
+    if (!chip) return;
+    const range = chip.dataset.range;
+    if (range === 'custom') {
+        filterDatePreset = 'custom';
+        updateDateUi();
+        return;
+    }
+    setDatePreset(range);
+    render();
+});
+
+avDateFrom.addEventListener('change', function() {
+    filterDatePreset = 'custom';
+    filterDateFrom = this.value ? startOfDay(new Date(this.value)) : null;
+    updateDateUi();
+    render();
+});
+avDateTo.addEventListener('change', function() {
+    filterDatePreset = 'custom';
+    filterDateTo = this.value ? endOfDay(new Date(this.value)) : null;
+    updateDateUi();
+    render();
+});
+avDateClear.addEventListener('click', () => {
+    setDatePreset('all');
+    render();
 });
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeLightbox(); closeViewer(); } });
@@ -937,6 +1318,8 @@ document.addEventListener('mousemove', e => {
 });
 
 load();
+updateTypeTabStates();
+updateDateUi();
 </script>
 </body>
 </html>

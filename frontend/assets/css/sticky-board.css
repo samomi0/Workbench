@@ -253,22 +253,17 @@
     opacity: 0.5;
 }
 
-/* ── Ticket note ───────────────────────────────────────────── */
-.wb-ticket-content {
-    min-height: 80px;
-    max-height: 160px;
-}
-
-.wb-ticket-links {
+/* ── Note link area (embedded in note body) ────────────────── */
+.wb-note-links {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
-    padding: 6px 8px 8px;
+    padding: 4px 8px 6px;
     border-top: 1px solid rgba(0,0,0,0.07);
     align-items: flex-start;
 }
 
-.wb-ticket-link-btn {
+.wb-note-link-btn {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -288,37 +283,24 @@
     outline: none;
 }
 
-.wb-ticket-link-btn:hover {
+.wb-note-link-btn:hover {
     background: rgba(191,219,254,0.80);
     border-color: rgba(37,99,235,0.6);
 }
 
-.wb-link-del {
+.wb-link-icon {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    line-height: 1;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
     flex-shrink: 0;
-    opacity: 0;
-    transition: opacity var(--dur-fast) ease, background var(--dur-fast) ease;
-    cursor: pointer;
+    opacity: 0.65;
 }
 
-.wb-ticket-link-btn:hover .wb-link-del {
-    opacity: 0.6;
+.wb-link-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.wb-link-del:hover {
-    opacity: 1 !important;
-    background: rgba(239,68,68,0.15);
-    color: var(--danger);
-}
-
-.wb-ticket-add-link-btn {
+.wb-note-add-link-btn {
     padding: 3px 9px;
     border-radius: 12px;
     border: 1.5px dashed rgba(0,0,0,0.20);
@@ -331,12 +313,13 @@
     outline: none;
 }
 
-.wb-ticket-add-link-btn:hover {
+.wb-note-add-link-btn:hover {
     color: var(--primary);
     border-color: var(--primary);
 }
 
-.wb-ticket-link-form {
+/* ── Link form (inline in note body) ─────────────────────── */
+.wb-note-link-form {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -344,9 +327,9 @@
     width: 100%;
 }
 
-.wb-ticket-form-input {
+.wb-link-form-input {
     flex: 1;
-    min-width: 70px;
+    min-width: 60px;
     border: 1px solid rgba(0,0,0,0.18);
     border-radius: 4px;
     padding: 3px 6px;
@@ -357,10 +340,11 @@
     color: var(--text);
 }
 
-.wb-ticket-form-input:focus { border-color: var(--primary); }
+.wb-link-form-input:focus { border-color: var(--primary); }
 
-.wb-ticket-form-ok,
-.wb-ticket-form-cancel {
+.wb-link-form-ok,
+.wb-link-form-cancel,
+.wb-link-form-del {
     width: 22px;
     height: 22px;
     border-radius: 4px;
@@ -376,10 +360,26 @@
     transition: background var(--dur-fast) ease;
 }
 
-.wb-ticket-form-ok     { background: rgba(34,197,94,0.15); color: #16a34a; }
-.wb-ticket-form-ok:hover { background: rgba(34,197,94,0.30); }
-.wb-ticket-form-cancel { background: rgba(0,0,0,0.07); color: var(--muted); }
-.wb-ticket-form-cancel:hover { background: rgba(239,68,68,0.12); color: var(--danger); }
+.wb-link-form-ok     { background: rgba(34,197,94,0.15); color: #16a34a; }
+.wb-link-form-ok:hover { background: rgba(34,197,94,0.30); }
+.wb-link-form-cancel { background: rgba(0,0,0,0.07); color: var(--muted); }
+.wb-link-form-cancel:hover { background: rgba(239,68,68,0.12); color: var(--danger); }
+.wb-link-form-del    { background: rgba(239,68,68,0.10); color: var(--danger); font-size: 11px; font-weight: 600; }
+.wb-link-form-del:hover { background: rgba(239,68,68,0.25); }
+
+/* ── Pill icon (inside tag / link capsules) ───────────────── */
+.wb-pill-icon {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    opacity: 0.75;
+}
+
+/* Remove old ticket-specific styles that are no longer used */
+/* (wb-ticket-content, wb-ticket-links, wb-ticket-link-btn,
+    wb-link-del, wb-ticket-add-link-btn, wb-ticket-link-form,
+    wb-ticket-form-input, wb-ticket-form-ok, wb-ticket-form-cancel
+    are kept below for backward compat but new code uses wb-note-* variants) */
 
 /* ── Image note ────────────────────────────────────────────── */
 .wb-sticky-img-wrap {
@@ -561,7 +561,7 @@
 .wb-tag-dd-add-btn:hover { background: rgba(37,99,235,0.12); color: var(--primary); }
 .wb-tag-dd-add-btn:disabled { opacity: 0.45; cursor: default; }
 
-/* ── Ticket link colour picker ─────────────────────────────── */
+/* ── Link colour picker ─────────────────────────────────── */
 .wb-link-color-row {
     display: flex;
     gap: 5px;
@@ -665,3 +665,47 @@
 }
 .wb-sticky-img-item:hover .wb-sticky-img-del { display: flex; }
 .wb-sticky-img-del:hover { background: rgba(220,38,38,0.75); }
+
+/* ── Note timestamp bar ───────────────────────────────────── */
+.wb-sticky-ts-bar {
+    padding: 3px 8px 6px;
+    background: rgba(255,255,255,0.72);
+    border-radius: 0 0 6px 6px;
+}
+
+/* When ts-bar is present, remove bottom rounding from body and tags */
+.wb-sticky.has-ts-bar .wb-sticky-body,
+.wb-sticky.has-ts-bar .wb-sticky-tags {
+    border-radius: 0;
+}
+
+.wb-sticky-ts-text {
+    font-size: 10px;
+    color: var(--muted);
+    opacity: 0.65;
+    cursor: pointer;
+    user-select: none;
+    display: inline-block;
+    transition: opacity var(--dur-fast) ease;
+}
+
+.wb-sticky-ts-text:hover {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.wb-sticky-ts-input {
+    height: 22px;
+    padding: 0 6px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: var(--font-ui);
+    background: var(--bg-canvas);
+    color: var(--text);
+    outline: none;
+    width: 160px;
+}
+
+.wb-sticky-ts-input:focus { border-color: var(--primary); }
