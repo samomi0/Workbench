@@ -1,7 +1,7 @@
 {
   "id": "archive-view",
-  "name": "归档",
+  "name": "归档管理",
   "icon": "icon-archive",
-  "description": "Browse and manage archived sticky notes",
+  "description": "Browse and manage archived sticky notes and tags",
   "version": "1.0"
 }

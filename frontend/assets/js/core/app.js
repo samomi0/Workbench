@@ -97,9 +97,7 @@ function homeRadialItems() {
         { id: 'new-todo',   icon: 'icon-todo',   label: 'Todo',     action: () => board.createNote(menu.openPos, 'todo') },
     ];
     const archiveTool = _tools.find(t => t.id === 'archive-view');
-    const tagTool     = _tools.find(t => t.id === 'tag-manager');
     if (archiveTool) items.push({ ...archiveTool, label: archiveTool.name, action: () => switchPage(archiveTool) });
-    if (tagTool)     items.push({ ...tagTool,     label: tagTool.name,     action: () => switchPage(tagTool) });
     return items;
 }
 
