@@ -30,7 +30,7 @@ _EXCLUDE_SUFFIXES = {".pyc", ".pyo"}
 def _should_include(file_path: Path) -> bool:
     """Return True if *file_path* should be included in a backup."""
     # Exclude by directory / file name
-    for part in file_path.relative_to(config.PROJECT_DIR).parts:
+    for part in file_path.relative_to(config._PROJECT_DIR).parts:
         if part in _EXCLUDE_NAMES:
             return False
     # Exclude by suffix
@@ -53,7 +53,7 @@ def create_backup() -> Path:
     zip_name = f"workbench_backup_{timestamp}.zip"
     zip_path = config.BACKUP_DIR / zip_name
 
-    base = config.PROJECT_DIR
+    base = config._PROJECT_DIR
 
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         count = 0
@@ -101,12 +101,12 @@ def cleanup_old_backups() -> int:
 async def _backup_loop():
     """Run one backup cycle every BACKUP_INTERVAL_HOURS hours."""
     while True:
-        await asyncio.sleep(config.BACKUP_INTERVAL_HOURS * 3600)
         try:
             create_backup()
             cleanup_old_backups()
         except Exception:
             logger.exception("Backup cycle failed")
+        await asyncio.sleep(config.BACKUP_INTERVAL_HOURS * 3600)
 
 
 _backup_task = None
